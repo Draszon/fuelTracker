@@ -1,5 +1,5 @@
 <script setup>
-import AppLayout from '@/Layouts/AdminLayout.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
 import Welcome from '@/Components/Welcome.vue';
 </script>
 
