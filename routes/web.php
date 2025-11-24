@@ -15,4 +15,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     })->name('main');
 
     Route::get('/fuel-tracker', [FuelController::class, 'index'])->name('get.fuelData');
+    
+    Route::post('/fuel-store', [FuelController::class, 'store'])->name('store.fuelData');
 });

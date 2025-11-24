@@ -1,10 +1,24 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
+import { useForm } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
 const props = defineProps({
   fuelDatas: Array
 });
+
+const form = useForm({
+  date: '',
+  name: '',
+  quabtity: '',
+  km: '',
+  consumption: '',
+  money: ''
+});
+
+function submit() {
+  form.post(route('store.fuelData'));
+}
 </script>
 
 <template>
@@ -19,7 +33,7 @@ const props = defineProps({
         <!--Üzenetek ide jönnek majd-->
       </div>
       
-      <form @submit.prevent="" method="post">
+      <form @submit.prevent="submit">
         <div class="flex flex-col mb-5">
           <label for="date">Dátum</label>
           <input type="date" required
