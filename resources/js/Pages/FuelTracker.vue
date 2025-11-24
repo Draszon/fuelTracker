@@ -1,7 +1,11 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
-import { useForm } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { ref, onMounted, computed } from 'vue';
+
+const page = usePage();
+
+const flashMessage = computed(() => page.props.flash?.message);
 
 const props = defineProps({
   fuelDatas: Array
@@ -10,7 +14,6 @@ const props = defineProps({
 const form = useForm({
   date: '',
   name: '',
-  quabtity: '',
   km: '',
   consumption: '',
   money: ''
@@ -30,7 +33,9 @@ function submit() {
       <h2 class="font-bold mb-2">Üzemanyag adatok feltöltése / módosítása:</h2>
 
       <div class="h-10">
-        <!--Üzenetek ide jönnek majd-->
+        <p v-if="flashMessage">
+          {{ flashMessage }}
+        </p>
       </div>
       
       <form @submit.prevent="submit">

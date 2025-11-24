@@ -22,7 +22,6 @@ class FuelController extends Controller
             'name' => 'required|string',
             'quantity' => 'required|numeric|min:0',
             'km' => 'required|numeric|min:0.1',
-            'consumption' => 'numeric',
             'money' => 'required|numeric|min:0',
         ]);
 
