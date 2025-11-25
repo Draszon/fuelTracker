@@ -22,15 +22,46 @@ class FuelController extends Controller
             'name' => 'required|string',
             'quantity' => 'required|numeric|min:0',
             'km' => 'required|numeric|min:0.1',
+            'consumption' => 'required|numeric',
             'money' => 'required|numeric|min:0',
         ]);
 
         try {
             Fuel::create($request->all());
-            return back()->with('message', 'Sikeres adatfeltöltés!');
+            return redirect()->back()->with('message', 'Sikeres adatfeltöltés!');
         } catch (\Exception $e) {
-            return back()->with('message', 'Hiba az adatok feltöltése közben: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Hiba az adatok feltöltése közben: ' . $e->getMessage());
         }
-        
+    }
+
+    public function destroy($id) {
+        $selectedToDelete = Fuel::findOrFail($id);
+        $selectedToDelete->delete();
+        return redirect()->back()->with('message', 'Sikeres adattörlés!');
+    }
+
+    public function update(Request $request, $id) {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'name' => 'required|string',
+            'quantity' => 'required|numeric|min:0',
+            'km' => 'required|numeric|min:0.1',
+            'consumption' => 'required|numeric',
+            'money' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            $fuelData = Fuel::findOrFail($id);
+            $fuelData->date = $validated['date'];
+            $fuelData->name = $validated['name'];
+            $fuelData->quantity = $validated['quantity'];
+            $fuelData->km = $validated['km'];
+            $fuelData->consumption = $validated['consumption'];
+            $fuelData->money = $validated['money'];
+            $fuelData->save();
+            return redirect()->back()->with('message', 'Sikeres adatmódosítás!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('Hiba módosítás közben: ' . $e->getMessage());
+        }
     }
 }

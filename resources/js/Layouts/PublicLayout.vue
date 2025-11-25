@@ -1,11 +1,13 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-
-
+import { onMounted, ref } from 'vue';
 
 const logout = () => {
   router.post(route('logout'));
 };
+
+const mobileMenu = ref(false);
+
 </script>
 
 <template>
@@ -16,7 +18,7 @@ const logout = () => {
 
 <header class="bg-white h-16 flex justify-center items-center">
   <div class="md:hidden w-12" id="nav-btn">
-    <img src="/images/hamburger-menu-closed.svg" alt="Hamburger menü">
+    <img @click="mobileMenu = !mobileMenu" src="/images/hamburger-menu-closed.svg" alt="Hamburger menü">
   </div>
   <nav class="hidden md:block">
     <ul class="flex gap-7 font-medium">
@@ -32,7 +34,8 @@ const logout = () => {
   </nav>
 </header>
 
-<nav class="bg-white flex md:hidden items-center px-2 max-h-0 overflow-hidden" id="mobile-nav">
+<nav class="bg-white flex md:hidden items-center px-2 max-h-0 overflow-hidden" id="mobile-nav"
+  v-if="mobileMenu" :class="mobileMenu ? 'animate-appear' : 'animate-disappear'">
   <ul class="flex flex-col gap-2 font-medium w-full">
     <Link href="/" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Főoldal</li></Link>
     <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Kocsi adatai</li></Link>
