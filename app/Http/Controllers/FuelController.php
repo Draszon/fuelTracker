@@ -43,7 +43,7 @@ class FuelController extends Controller
     public function update(Request $request, $id) {
         $validated = $request->validate([
             'date' => 'required|date',
-            'name' => 'required|string',
+            'namee' => 'required|string',
             'quantity' => 'required|numeric|min:0',
             'km' => 'required|numeric|min:0.1',
             'consumption' => 'required|numeric',
@@ -52,16 +52,10 @@ class FuelController extends Controller
 
         try {
             $fuelData = Fuel::findOrFail($id);
-            $fuelData->date = $validated['date'];
-            $fuelData->name = $validated['name'];
-            $fuelData->quantity = $validated['quantity'];
-            $fuelData->km = $validated['km'];
-            $fuelData->consumption = $validated['consumption'];
-            $fuelData->money = $validated['money'];
-            $fuelData->save();
+            $fuelData->update($validated);
             return redirect()->back()->with('message', 'Sikeres adatmódosítás!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('Hiba módosítás közben: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Hiba módosítás közben: ' . $e->getMessage());
         }
     }
 }

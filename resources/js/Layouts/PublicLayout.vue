@@ -23,7 +23,7 @@ const mobileMenu = ref(false);
   <nav class="hidden md:block">
     <ul class="flex gap-7 font-medium">
       <Link href="/" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Főoldal</li></Link>
-      <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Kocsi adatai</li></Link>
+      <Link href="/car-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Kocsi adatai</li></Link>
       <Link href="/fuel-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Üzemanyag nyilvántartó</li></Link>
       <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Szerviznapló</li></Link>
       <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Biztosítási adatok</li></Link>
@@ -38,7 +38,7 @@ const mobileMenu = ref(false);
   v-if="mobileMenu" :class="mobileMenu ? 'animate-appear' : 'animate-disappear'">
   <ul class="flex flex-col gap-2 font-medium w-full">
     <Link href="/" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Főoldal</li></Link>
-    <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Kocsi adatai</li></Link>
+    <Link href="/car-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Kocsi adatai</li></Link>
     <Link href="/fuel-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Üzemanyag nyilvántartó</li></Link>
     <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Szerviznapló</li></Link>
     <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Biztosítási adatok</li></Link>

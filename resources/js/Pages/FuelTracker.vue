@@ -1,13 +1,21 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
-import { useForm, router } from '@inertiajs/vue3';
+import { useForm, router, usePage } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
 const props = defineProps({
   fuelDatas: Array
 });
 
+const page = usePage();
+let editActive = false;
+let btnText = {
+  upload: 'Feltöltés',
+  update: 'Frissítés'
+}
+
 let form = useForm({
+  id: null,
   date: '',
   name: '',
   quantity: '',
@@ -16,7 +24,7 @@ let form = useForm({
   money: ''
 });
 
-function submit() {
+function store() {
   form.consumption = (form.quantity / form.km) * 100;
   form.post('/fuel-store', {
     preserveScroll: true
@@ -25,16 +33,30 @@ function submit() {
 }
 
 function deleteFuelData(id) {
-  router.delete(`/fuel-delete/${id}`);
+  router.delete(`/fuel-delete/${id}`, {
+    preserveScroll: true
+  });
 }
 
-function editFuelData(selected) {
+function loadSelectedData(selected) {
+  editActive = true;
   form.reset();
+  form.id = selected.id;
   form.date = selected.date;
   form.name = selected.name;
   form.quantity = selected.quantity;
   form.km = selected.km;
-  form.money = selected.money;
+  form.consumption = selected.consumption;
+  form.money = selected.money;  
+}
+
+function update(id) {
+  form.consumption = (form.quantity / form.km) * 100;
+  form.put(`/fuel-update/${id}`, {
+    preserveScroll: true
+  });
+  form.reset();
+  editActive = false;
 }
 </script>
 
@@ -45,8 +67,10 @@ function editFuelData(selected) {
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
       <h2 class="font-bold mb-2">Üzemanyag adatok feltöltése / módosítása:</h2>
-      
-      <form @submit.prevent="submit">
+
+      <p v-if="page.props?.flash?.message">{{ page.props.flash.message }}</p>
+
+      <form @submit.prevent="editActive ? update(form.id) : store()">
         <div class="flex flex-col mb-5">
           <label for="date">Dátum</label>
           <input type="date" required v-model="form.date"
@@ -95,7 +119,7 @@ function editFuelData(selected) {
         <button type="submit"
           class="transition ease-in-out delay-150 text-white
           rounded py-2 px-10 bg-gray-500 hover:bg-gray-700"
-        >Feltölt</button>
+        >{{ editActive ? btnText.update : btnText.upload }}</button>
       </form>
     </div>
   </div>
@@ -133,7 +157,7 @@ function editFuelData(selected) {
                 <button @click="deleteFuelData(fuelData.id)"
                   class="py-1 px-2 rounded bg-red-500 text-white">Törlés</button>
                 
-                <button @click="editFuelData(fuelData)"
+                <button @click="loadSelectedData(fuelData)"
                   class="py-1 px-2 rounded bg-gray-500 text-white">Szerk.</button>
               </li>
             </ul>
