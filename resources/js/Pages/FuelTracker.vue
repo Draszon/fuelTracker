@@ -3,8 +3,10 @@ import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { useForm, router, usePage } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
+//props-ban megkapja a backend-től az adatokat
 const props = defineProps({
-  fuelDatas: Array
+  fuelDatas: Array,
+  carDatas: Array
 });
 
 const page = usePage();
@@ -14,8 +16,10 @@ let btnText = {
   update: 'Frissítés'
 }
 
+//a form mezői amit később feldolgoz
 let form = useForm({
   id: null,
+  car_id: '',
   date: '',
   name: '',
   quantity: '',
@@ -24,24 +28,31 @@ let form = useForm({
   money: ''
 });
 
+//a form mezőibe betöltött adatokat http kérésen keresztül
+//elküldi a backendnek, kiszámolja a fogyasztást, majd
+//törli a form mezőit
 function store() {
   form.consumption = (form.quantity / form.km) * 100;
   form.post('/fuel-store', {
-    preserveScroll: true
+    preserveScroll: true //megakadályozza, hogy az oldal tetejére menjen vissza
   });
   form.reset();
 }
 
+//a kiválasztott eleme id-ját elküldi backendnek törlésre
 function deleteFuelData(id) {
   router.delete(`/fuel-delete/${id}`, {
     preserveScroll: true
   });
 }
 
+//visszatölti a formba a kiválasztott elemet, a gomb feliratát
+//feltöltésről frissítésre módosítja
 function loadSelectedData(selected) {
   editActive = true;
   form.reset();
   form.id = selected.id;
+  form.car_id = selected.car_id;
   form.date = selected.date;
   form.name = selected.name;
   form.quantity = selected.quantity;
@@ -50,13 +61,19 @@ function loadSelectedData(selected) {
   form.money = selected.money;  
 }
 
+//elküldi a backendnek a frissíteni kívánt elem adatait miután
+//kiszámolta a fogyasztást
 function update(id) {
   form.consumption = (form.quantity / form.km) * 100;
   form.put(`/fuel-update/${id}`, {
-    preserveScroll: true
+    preserveScroll: true,
+    //ha kész, reseteli a form mezőit és visszállítja a gomb szövegét
+    //feltöltésre
+    onSuccess: () => {
+      form.reset();
+      editActive = false;
+    }
   });
-  form.reset();
-  editActive = false;
 }
 </script>
 
@@ -71,9 +88,10 @@ function update(id) {
       <p v-if="page.props?.flash?.message">{{ page.props.flash.message }}</p>
 
       <form @submit.prevent="editActive ? update(form.id) : store()">
+
         <div class="flex flex-col mb-5">
           <label for="date">Dátum</label>
-          <input type="date" required v-model="form.date"
+          <input type="date" required v-model="form.date" id="date"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -81,8 +99,19 @@ function update(id) {
         </div>
 
         <div class="flex flex-col mb-5">
+          <label for="car">Válaszd ki a kocsit</label>
+          <select required v-model="form.car_id" id="car"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+          <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
+        </select>
+        </div>
+
+        <div class="flex flex-col mb-5">
           <label for="name">Töltőállomás neve</label>
-          <input type="text" placeholder="MOL" required v-model="form.name"
+          <input type="text" placeholder="MOL" required v-model="form.name" id="name"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -91,7 +120,7 @@ function update(id) {
 
         <div class="flex flex-col mb-5">
           <label for="quantity">Mennyiség (l)</label>
-          <input type="number" placeholder="25" required step="0.01" v-model="form.quantity"
+          <input type="number" placeholder="25" required step="0.01" v-model="form.quantity" id="quantity"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -100,7 +129,7 @@ function update(id) {
 
         <div class="flex flex-col mb-5">
           <label for="km">Megtett táv (km)</label>
-          <input type="number" placeholder="560" required v-model="form.km"
+          <input type="number" placeholder="560" required v-model="form.km" id="km"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -109,7 +138,7 @@ function update(id) {
 
         <div class="flex flex-col mb-5">
           <label for="money">Összeg (Ft)</label>
-          <input type="number" placeholder="21600" required v-model="form.money"
+          <input type="number" placeholder="21600" required v-model="form.money" id="money"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -133,6 +162,7 @@ function update(id) {
           <div class="h-10 flex justify-center items-center">
             <ul class="flex flex-row gap-5 text-center font-medium">
               <li class="flex-none w-32">Dátum</li>
+              <li class="flex-none w-32">Kocsi</li>
               <li class="flex-none w-32">Töltőállomás</li>
               <li class="flex-none w-32">Mennyiség (l)</li>
               <li class="flex-none w-32">Megtett táv (km)</li>
@@ -144,10 +174,11 @@ function update(id) {
         </div>
 
         <div class="min-w-max border-b border-gray-300">
-          <div v-for="fuelData in fuelDatas"
+          <div v-for="fuelData in fuelDatas" :key="fuelData.id"
             class="h-10 flex justify-center items-center border-b">
             <ul class="flex flex-row gap-5 text-center font-medium">
               <li class="flex-none w-32">{{ fuelData.date }}</li>
+              <li class="flex-none w-32">{{ fuelData.car.name }}</li>
               <li class="flex-none w-32">{{ fuelData.name }}</li>
               <li class="flex-none w-32">{{ fuelData.quantity }} l</li>
               <li class="flex-none w-32">{{ fuelData.km }} km</li>

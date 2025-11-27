@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Car;
 use App\Models\Fuel;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -9,15 +10,18 @@ use Inertia\Inertia;
 class FuelController extends Controller
 {
     public function index() {
-        $fuelDatas = Fuel::orderBy('date', 'desc')->get();
+        $fuelDatas = Fuel::with('car')->orderBy('date', 'desc')->get();
+        $carDatas = Car::all();
         
         return Inertia::render('FuelTracker', [
             'fuelDatas' => $fuelDatas,
+            'carDatas' => $carDatas,
         ]);
     }
 
     public function store(Request $request) {
         $request->validate([
+            'car_id' => 'required',
             'date' => 'required|date',
             'name' => 'required|string',
             'quantity' => 'required|numeric|min:0',
@@ -43,7 +47,8 @@ class FuelController extends Controller
     public function update(Request $request, $id) {
         $validated = $request->validate([
             'date' => 'required|date',
-            'namee' => 'required|string',
+            'car_id' => 'required',
+            'name' => 'required|string',
             'quantity' => 'required|numeric|min:0',
             'km' => 'required|numeric|min:0.1',
             'consumption' => 'required|numeric',
