@@ -10,7 +10,7 @@ use Inertia\Inertia;
 class ServiceController extends Controller
 {
     public function index() {
-        $serviceDatas = Service::all();
+        $serviceDatas = Service::with('car')->get();
         $carDatas = Car::all();
         return Inertia::render('ServiceTracker', [
             'carDatas' => $carDatas,

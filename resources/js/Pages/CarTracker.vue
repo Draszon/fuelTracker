@@ -148,8 +148,8 @@ const updateCar = (id) => {
           >
         </div>
 
-      <button type="submit" @click="addNewCar = false" class="transition ease-in-out delay-150 text-white
-          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? btnTitle.update : btnTitle.store }}</button>
+        <button type="submit" @click="addNewCar = false" class="transition ease-in-out delay-150 text-white
+            rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? btnTitle.update : btnTitle.store }}</button>
       </form>
     </div>
   </div>
