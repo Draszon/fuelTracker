@@ -1,28 +1,173 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
-import { useForm, router, usePage } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { Head, useForm, router, usePage } from '@inertiajs/vue3';
+import { ref, onMounted, computed } from 'vue';
 
 const props = defineProps({
   carDatas: Array
 });
 
-const addNewCar = ref(false);
+const page = usePage();
+const flashMessage = computed(() => page.props.flash?.message);
+const message = ref(flashMessage.value);
+let editActive = false;
+let addNewCar = ref(false);
+const btnTitle = {
+  'store': 'Feltöltés',
+  'update': 'Frissítés'
+}
 
+let form  = useForm({
+  name: '',
+  licence_plate: '',
+  car_type: '',
+  year: '',
+  oil_change_cycle_km: '',
+  oil_change_cycle_year: '',
+  break_oil_cycle_km: ''
+});
+
+const store = () => {
+  form.post('/car-store', {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset();
+    }
+  });
+}
+
+const deleteCar = (selected) => {
+  router.delete(`/car-delete/${selected}`, {
+    preserveScroll: true
+  });
+}
+
+const loadSelectedCar = (selected) => {
+  editActive = true;
+  form.reset();
+  form.id = selected.id,
+  form.name = selected.name,
+  form.licence_plate = selected.licence_plate,
+  form.car_type = selected.car_type,
+  form.year = selected.year,
+  form.oil_change_cycle_km = selected.oil_change_cycle_km,
+  form.oil_change_cycle_year = selected.oil_change_cycle_year,
+  form.break_oil_cycle_km = selected.break_oil_cycle_km
+}
+
+const updateCar = (id) => {
+  form.put(`/car-update/${id}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset();
+    }
+  });
+  editActive = false;
+}
 
 </script>
 
 <template>
+<Head>
+  <title>Gépjármű</title>
+</Head>
+
 <PublicLayout>
+
+<section class="my-10" v-show="addNewCar || editActive">
+  <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
+    <div class="px-2 xl:px-10">
+      <h2 class="font-bold text-2xl mb-5">Új gépjármű feltöltése</h2>
+      
+      <p v-if="message" class="font-medium text-red-500">
+        {{ message }}
+      </p>
+
+      <form @submit.prevent="editActive ? updateCar(form.id) : store()">
+      
+        <div class="flex flex-col mb-5">
+          <label for="name">Elnevezés:</label>
+          <input type="text" placeholder="Szuzu" required v-model="form.name" id="name"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="type">Típus:</label>
+          <input type="text" placeholder="Suzuki Swift" required v-model="form.car_type" id="type"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="licence-plate">Rendszám</label>
+          <input type="text" placeholder="KZN-235" required v-model="form.licence_plate" id="licence-plate"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="year">Gyártás éve</label>
+          <input type="number" placeholder="2008" required v-model="form.year" id="year"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="oil-change-cycle-km">Olajcsere ciklus (km)</label>
+          <input type="number" placeholder="10000" required v-model="form.oil_change_cycle_km" id="oil-change-cycle-km"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="oil-change-cycle-year">Olajcsere ciklus (év)</label>
+          <input type="number" placeholder="2" required v-model="form.oil_change_cycle_year" id="oil-change-cycle-year"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="break-oil-cycle-km">Fékolaj csere ciklus (év)</label>
+          <input type="number" placeholder="2" required v-model="form.break_oil_cycle_km" id="break-oil-cycle-km"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+      <button type="submit" @click="addNewCar = false" class="transition ease-in-out delay-150 text-white
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? btnTitle.update : btnTitle.store }}</button>
+      </form>
+    </div>
+  </div>
+</section>
 
 <section class="my-10">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
       <h2 class="font-bold text-2xl mb-5">Gépjárművek</h2>
 
-      <div class="flex flex-col sm:flex-row gap-5">
+      <div class="mb-5">
+        <button @click="addNewCar = true" class="transition ease-in-out delay-150 text-white
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Gépjármű hozzáadása</button>
+      </div>
+
+      <div class="flex flex-col flex-wrap sm:flex-row gap-5">
         <div v-for="carData in carDatas"
-          class="flex flex-col w-[300px] gap-5 shadow-lg rounded-md p-7">
+          class="flex flex-col w-[285px] gap-5 shadow-lg rounded-md p-7">
           <h2 class="font-bold text-xl">{{ carData.name }}</h2>
           <div>
             <div class="py-3 border-b border-gray-300">
@@ -42,37 +187,29 @@ const addNewCar = ref(false);
 
             <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Olajcsere ciklus (km):</p>
-              <p>{{ carData.oil_change_cycle_km }}</p>
+              <p>{{ carData.oil_change_cycle_km }} km</p>
             </div>
 
             <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Olajcsere ciklus (év):</p>
-              <p>{{ carData.oil_change_cycle_year }}</p>
+              <p>{{ carData.oil_change_cycle_year }} év</p>
             </div>
 
             <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Fékolaj csere ciklus (év):</p>
-              <p>{{ carData.break_oil_cycle_km }}</p>
+              <p>{{ carData.break_oil_cycle_km }} év</p>
             </div>
           </div>
           <div class="flex flex-col gap-5">
-            <button class="transition ease-in-out delay-150 text-white
+            <button @click="loadSelectedCar(carData)" class="transition ease-in-out delay-150 text-white
               rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Módosítás</button>
 
-            <button class="transition ease-in-out delay-150 text-white
+            <button @click="deleteCar(carData.id)" class="transition ease-in-out delay-150 text-white
               rounded py-2 px-10 bg-red-500">Törlés</button>
           </div>
         </div>
       </div>
       
-    </div>
-  </div>
-</section>
-
-<section class="my-10">
-  <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
-    <div class="px-2 xl:px-10">
-      <h2 class="font-bold mb-2">Új gépjármű feltöltése</h2>
     </div>
   </div>
 </section>

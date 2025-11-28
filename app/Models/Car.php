@@ -20,4 +20,8 @@ class Car extends Model
     public function fuels(): HasMany {
         return $this->hasMany(Fuel::class);
     }
+
+    public function services(): HasMany {
+        return $this->hasMany(Service::class);
+    }
 }

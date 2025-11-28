@@ -1,7 +1,7 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
-import { useForm, router, usePage } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { Head, useForm, router, usePage } from '@inertiajs/vue3';
+import { computed, ref, onMounted, watch } from 'vue';
 
 //props-ban megkapja a backend-től az adatokat
 const props = defineProps({
@@ -10,11 +10,23 @@ const props = defineProps({
 });
 
 const page = usePage();
+const flashMessage = computed(() => page.props.flash?.message);
+const message = ref(flashMessage.value);
+
 let editActive = false;
 let btnText = {
   upload: 'Feltöltés',
   update: 'Frissítés'
 }
+
+watch(flashMessage, (val) => {
+  if (val) {
+    message.value = val;
+    setTimeout(() => {
+      message.value = null;
+    }, 3000);
+  }
+});
 
 //a form mezői amit később feldolgoz
 let form = useForm({
@@ -34,9 +46,11 @@ let form = useForm({
 function store() {
   form.consumption = (form.quantity / form.km) * 100;
   form.post('/fuel-store', {
-    preserveScroll: true //megakadályozza, hogy az oldal tetejére menjen vissza
+    preserveScroll: true, //megakadályozza, hogy az oldal tetejére menjen vissza
+    onSuccess: () => {
+      form.reset();
+    }
   });
-  form.reset();
 }
 
 //a kiválasztott eleme id-ját elküldi backendnek törlésre
@@ -78,14 +92,20 @@ function update(id) {
 </script>
 
 <template>
+<Head>
+  <title>Üzemanyag</title>
+</Head>
+
 <PublicLayout>
 
 <section class="my-10">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
-      <h2 class="font-bold mb-2">Üzemanyag adatok feltöltése / módosítása:</h2>
+      <h2 class="font-bold text-2xl mb-2">Üzemanyag adatok feltöltése / módosítása:</h2>
 
-      <p v-if="page.props?.flash?.message">{{ page.props.flash.message }}</p>
+      <p v-if="message" class="font-medium text-red-500">
+        {{ message }}
+      </p>
 
       <form @submit.prevent="editActive ? update(form.id) : store()">
 

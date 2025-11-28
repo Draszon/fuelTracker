@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
 const logout = () => {
@@ -12,10 +12,6 @@ const mobileMenu = ref(false);
 
 <template>
 
-<Head>
-  <title>Üzemanyag</title>
-</Head>
-
 <header class="bg-white h-16 flex justify-center items-center">
   <div class="md:hidden w-12" id="nav-btn">
     <img @click="mobileMenu = !mobileMenu" src="/images/hamburger-menu-closed.svg" alt="Hamburger menü">
@@ -25,7 +21,7 @@ const mobileMenu = ref(false);
       <Link href="/" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Főoldal</li></Link>
       <Link href="/car-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Kocsi adatai</li></Link>
       <Link href="/fuel-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Üzemanyag nyilvántartó</li></Link>
-      <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Szerviznapló</li></Link>
+      <Link href="/service-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Szerviznapló</li></Link>
       <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Biztosítási adatok</li></Link>
       <form @submit.prevent="logout">
         <button type="submit">Kijelentkezés</button>
@@ -40,7 +36,7 @@ const mobileMenu = ref(false);
     <Link href="/" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Főoldal</li></Link>
     <Link href="/car-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Kocsi adatai</li></Link>
     <Link href="/fuel-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Üzemanyag nyilvántartó</li></Link>
-    <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Szerviznapló</li></Link>
+    <Link href="/service-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Szerviznapló</li></Link>
     <Link href="#" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Biztosítási adatok</li></Link>
     <form @submit.prevent="logout">
         <button type="submit">Kijelentkezés</button>
