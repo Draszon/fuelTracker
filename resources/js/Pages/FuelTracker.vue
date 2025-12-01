@@ -14,10 +14,6 @@ const flashMessage = computed(() => page.props.flash?.message);
 const message = ref(flashMessage.value);
 
 let editActive = false;
-let btnText = {
-  upload: 'Feltöltés',
-  update: 'Frissítés'
-}
 
 watch(flashMessage, (val) => {
   if (val) {
@@ -168,7 +164,7 @@ function update(id) {
         <button type="submit"
           class="transition ease-in-out delay-150 text-white
           rounded py-2 px-10 bg-gray-500 hover:bg-gray-700"
-        >{{ editActive ? btnText.update : btnText.upload }}</button>
+        >{{ editActive ? 'Frissítés' : 'Feltöltés' }}</button>
       </form>
     </div>
   </div>
@@ -197,13 +193,13 @@ function update(id) {
           <div v-for="fuelData in fuelDatas" :key="fuelData.id"
             class="h-10 flex justify-center items-center border-b">
             <ul class="flex flex-row gap-5 text-center font-medium">
-              <li class="flex-none w-32">{{ fuelData.date }}</li>
-              <li class="flex-none w-32">{{ fuelData.car.name }}</li>
-              <li class="flex-none w-32">{{ fuelData.name }}</li>
-              <li class="flex-none w-32">{{ fuelData.quantity }} l</li>
-              <li class="flex-none w-32">{{ fuelData.km }} km</li>
-              <li class="flex-none w-32">{{ Number(fuelData.consumption).toFixed(1) }} l/100km</li>
-              <li class="flex-none w-32">{{ fuelData.money }} Ft</li>
+              <li class="flex justify-center items-center w-32">{{ fuelData.date }}</li>
+              <li class="flex justify-center items-center w-32">{{ fuelData.car.name }}</li>
+              <li class="flex justify-center items-center w-32">{{ fuelData.name }}</li>
+              <li class="flex justify-center items-center w-32">{{ fuelData.quantity }} l</li>
+              <li class="flex justify-center items-center w-32">{{ fuelData.km }} km</li>
+              <li class="flex justify-center items-center w-32">{{ Number(fuelData.consumption).toFixed(1) }} l/100km</li>
+              <li class="flex justify-center items-center w-32">{{ fuelData.money }} Ft</li>
               <li class="w-32 flex gap-5">
                 <button @click="deleteFuelData(fuelData.id)"
                   class="py-1 px-2 rounded bg-red-500 text-white">Törlés</button>

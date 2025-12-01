@@ -27,4 +27,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::put('/car-update/{id}', [CarController::class, 'update'])->name('update.car');
 
     Route::get('/service-tracker', [ServiceController::class, 'index'])->name('get.serviceData');
+    Route::post('/service-store', [ServiceController::class, 'store'])->name('store.serviceData');
+    Route::delete('/service-delete/{id}', [ServiceController::class, 'destroy'])->name('destroy.serviceData');
+    Route::put('/service-update/{id}', [ServiceController::class, 'update'])->name('update.serviceData');
 });

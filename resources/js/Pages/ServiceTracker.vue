@@ -8,13 +8,52 @@ const props = defineProps({
   carDatas: Array
 });
 
+let editActive = false;
+
 let form = useForm({
+  id: null,
   car_id: '',
   date: '',
   current_km: '',
   description: '',
   cost: ''
 });
+
+const store = () => {
+  form.post('/service-store', {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset();
+    }
+  });
+}
+
+const destroy = (id) => {
+  router.delete(`/service-delete/${id}`, {
+    preserveScroll: true
+  });
+}
+
+const loadSelectedService = (selected) => {
+  editActive = true;
+  form.reset();
+  form.id = selected.id;
+  form.car_id = selected.car_id;
+  form.date = selected.date;
+  form.current_km = selected.current_km;
+  form.description = selected.description;
+  form.cost = selected.cost;
+}
+
+const updateSelectedService = (id) => {
+  form.put(`/service-update/${id}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset();
+      editActive = false;
+    }
+  });
+}
 
 </script>
 
@@ -29,7 +68,7 @@ let form = useForm({
     <div class="px-2 xl:px-10">
       <h2 class="font-bold text-2xl mb-5">Szerviztevékenség feltöltése</h2>
       
-      <form>
+      <form @submit.prevent="editActive ? updateSelectedService(form.id) : store()">
         <div class="flex flex-col mb-5">
           <label for="car">Válaszd ki a kocsit</label>
           <select required v-model="form.car_id" id="car"
@@ -78,7 +117,7 @@ let form = useForm({
         </div>
 
         <button type="submit" class="transition ease-in-out delay-150 text-white
-            rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Feltöltés</button>
+            rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? 'Frissítés' : 'Feltöltés' }}</button>
       </form>
     </div>
   </div>
@@ -94,7 +133,7 @@ let form = useForm({
               <li class="flex-none w-32">Dátum</li>
               <li class="flex-none w-32">Kocsi</li>
               <li class="flex-none w-32">km óra állása</li>
-              <li class="flex-none w-32">Javítás leírása</li>
+              <li class="flex-none w-64">Javítás leírása</li>
               <li class="flex-none w-32">Összeg</li>
               <li class="flex-none w-32">Műveletek</li>
             </ul>
@@ -103,19 +142,19 @@ let form = useForm({
 
         <div class="min-w-max border-b border-gray-300">
           <div v-for="serviceData in serviceDatas" :key="serviceData.id"
-            class="h-10 flex justify-center items-center border-b">
+            class="flex justify-center items-center border-b py-2">
             <ul class="flex flex-row gap-5 text-center font-medium">
-              <li class="flex-none w-32">{{ serviceData.date }}</li>
-              <li class="flex-none w-32">{{ serviceData.car.name }}</li>
-              <li class="flex-none w-32">{{ serviceData.current_km }} km</li>
-              <li class="flex-none w-32">{{ serviceData.description }}</li>
-              <li class="flex-none w-32">{{ serviceData.cost }} Ft</li>
-              <li class="w-32 flex gap-5">
-                <button @click="deleteFuelData(fuelData.id)"
-                  class="py-1 px-2 rounded bg-red-500 text-white">Törlés</button>
+              <li class="flex justify-center items-center w-32">{{ serviceData.date }}</li>
+              <li class="flex justify-center items-center w-32">{{ serviceData.car.name }}</li>
+              <li class="flex justify-center items-center w-32">{{ serviceData.current_km }} km</li>
+              <li class="flex justify-center items-center w-64">{{ serviceData.description }}</li>
+              <li class="flex justify-center items-center w-32">{{ serviceData.cost }} Ft</li>
+              <li class="w-32 flex justify-center items-center gap-5">
+                <button @click="destroy(serviceData.id)"
+                  class="px-2 h-8 rounded bg-red-500 text-white">Törlés</button>
                 
-                <button @click="loadSelectedData(fuelData)"
-                  class="py-1 px-2 rounded bg-gray-500 text-white">Szerk.</button>
+                <button @click="loadSelectedService(serviceData)"
+                  class="py-1 h-8 px-2 rounded bg-gray-500 text-white">Szerk.</button>
               </li>
             </ul>
           </div>
