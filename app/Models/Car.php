@@ -24,4 +24,8 @@ class Car extends Model
     public function services(): HasMany {
         return $this->hasMany(Service::class);
     }
+
+    public function insurances(): HasMany {
+        return $this->hasMany(Insurance::class);
+    }
 }

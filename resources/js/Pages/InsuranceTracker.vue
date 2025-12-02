@@ -1,55 +1,31 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { Head, useForm, router, usePage } from '@inertiajs/vue3';
+import { ref, onMounted, computed } from 'vue';
 
 const props = defineProps({
-  serviceDatas: Array,
+  insuranceDatas: Array,
   carDatas: Array
 });
 
 let editActive = false;
 
-let form = useForm({
+const form = useForm({
   id: null,
   car_id: '',
-  date: '',
-  current_km: '',
-  description: '',
-  cost: ''
+  insturance_type: '',
+  provider: '',
+  cost: '',
+  valid_from: '',
+  valid_until: '',
+  notes: ''
 });
 
-const store = () => {
-  form.post('/service-store', {
+const storeInsuranceData = () => {
+  form.post(`/insurance-store`, {
     preserveScroll: true,
     onSuccess: () => {
       form.reset();
-    }
-  });
-}
-
-const destroy = (id) => {
-  router.delete(`/service-delete/${id}`, {
-    preserveScroll: true
-  });
-}
-
-const loadSelectedService = (selected) => {
-  editActive = true;
-  form.reset();
-  form.id = selected.id;
-  form.car_id = selected.car_id;
-  form.date = selected.date;
-  form.current_km = selected.current_km;
-  form.description = selected.description;
-  form.cost = selected.cost;
-}
-
-const updateSelectedService = (id) => {
-  form.put(`/service-update/${id}`, {
-    preserveScroll: true,
-    onSuccess: () => {
-      form.reset();
-      editActive = false;
     }
   });
 }
@@ -58,16 +34,17 @@ const updateSelectedService = (id) => {
 
 <template>
 <Head>
-  <title>Szerviz</title>
+  <title>Biztosítás</title>
 </Head>
+
 <PublicLayout>
 
 <section class="my-10">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
-      <h2 class="font-bold text-2xl mb-5">Szerviztevékenség feltöltése</h2>
+      <h2 class="font-bold text-2xl mb-5">Biztosítási adatok feltöltése</h2>
       
-      <form @submit.prevent="editActive ? updateSelectedService(form.id) : store()">
+      <form @submit.prevent="storeInsuranceData">
         <div class="flex flex-col mb-5">
           <label for="car">Válaszd ki a kocsit</label>
           <select required v-model="form.car_id" id="car"
@@ -80,8 +57,8 @@ const updateSelectedService = (id) => {
         </div>
 
         <div class="flex flex-col mb-5">
-          <label for="date">Dátum</label>
-          <input type="date" placeholder="2" required id="date" v-model="form.date"
+          <label for="provider">Szolgáltató</label>
+          <input type="text" placeholder="Alfa biztosító" required id="provider" v-model="form.provider"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -89,8 +66,8 @@ const updateSelectedService = (id) => {
         </div>
 
         <div class="flex flex-col mb-5">
-          <label for="km">KM óra állása</label>
-          <input type="number" placeholder="230000" required id="km" v-model="form.current_km"
+          <label for="cost">Biztosítás ára</label>
+          <input type="number" placeholder="55000" required id="cost" v-model="form.cost"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -98,8 +75,8 @@ const updateSelectedService = (id) => {
         </div>
 
         <div class="flex flex-col mb-5">
-          <label for="description">Javítás leírása</label>
-          <input type="text" placeholder="Olajcsere" required id="description" v-model="form.description"
+          <label for="valid-from">Érv. kezdete</label>
+          <input type="date" required id="valid-from" v-model="form.valid_from"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -107,8 +84,17 @@ const updateSelectedService = (id) => {
         </div>
 
         <div class="flex flex-col mb-5">
-          <label for="cost">Összeg</label>
-          <input type="number" placeholder="13500" required id="cost" v-model="form.cost"
+          <label for="valid_until">Érv. vége</label>
+          <input type="date" required id="valid_from" v-model="form.valid_until"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="notes">Egyéb jegyzetek</label>
+          <input type="text" placeholder="Jegyzetek" required id="notes" v-model="form.notes"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -117,6 +103,7 @@ const updateSelectedService = (id) => {
 
         <button type="submit" class="transition ease-in-out delay-150 text-white
             rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? 'Frissítés' : 'Feltöltés' }}</button>
+
       </form>
     </div>
   </div>
@@ -129,25 +116,27 @@ const updateSelectedService = (id) => {
         <div class="min-w-max bg-gray-200 rounded border-b-2 border-gray-300 shadow-md">
           <div class="h-10 flex justify-center items-center">
             <ul class="flex flex-row gap-5 text-center font-medium">
-              <li class="flex-none w-32">Dátum</li>
               <li class="flex-none w-32">Kocsi</li>
-              <li class="flex-none w-32">km óra állása</li>
-              <li class="flex-none w-64">Javítás leírása</li>
-              <li class="flex-none w-32">Összeg</li>
+              <li class="flex-none w-32">Szolgáltató</li>
+              <li class="flex-none w-32">Biztosítás ára</li>
+              <li class="flex-none w-64">Érv. kezdete</li>
+              <li class="flex-none w-32">Érv. vége</li>
+              <li class="flex-none w-32">Egyéb jegyzetek</li>
               <li class="flex-none w-32">Műveletek</li>
             </ul>
           </div>
         </div>
 
         <div class="min-w-max border-b border-gray-300">
-          <div v-for="serviceData in serviceDatas" :key="serviceData.id"
+          <div v-for="insuranceData in insuranceDatas" :key="insuranceData.id"
             class="flex justify-center items-center border-b py-2">
             <ul class="flex flex-row gap-5 text-center font-medium">
-              <li class="flex justify-center items-center w-32">{{ serviceData.date }}</li>
-              <li class="flex justify-center items-center w-32">{{ serviceData.car.name }}</li>
-              <li class="flex justify-center items-center w-32">{{ serviceData.current_km }} km</li>
-              <li class="flex justify-center items-center w-64">{{ serviceData.description }}</li>
-              <li class="flex justify-center items-center w-32">{{ serviceData.cost }} Ft</li>
+              <li class="flex justify-center items-center w-32">{{ insuranceData.car.name }}</li>
+              <li class="flex justify-center items-center w-32">{{ insuranceData.provider }}</li>
+              <li class="flex justify-center items-center w-32">{{ insuranceData.cost }} Ft</li>
+              <li class="flex justify-center items-center w-64">{{ insuranceData.valid_from }}</li>
+              <li class="flex justify-center items-center w-32">{{ insuranceData.valid_until }}</li>
+              <li class="flex justify-center items-center w-32">{{ insuranceData.notes }}</li>
               <li class="w-32 flex justify-center items-center gap-5">
                 <button @click="destroy(serviceData.id)"
                   class="px-2 h-8 rounded bg-red-500 text-white">Törlés</button>
