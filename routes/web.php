@@ -4,6 +4,7 @@ use App\Http\Controllers\CarController;
 use App\Http\Controllers\FuelController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\StatisticsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -13,9 +14,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::get('/', function() {
+    /*Route::get('/', function() {
         return Inertia::render('Statistics');
-    })->name('main');
+    })->name('main');*/
+
+    Route::get('/', [StatisticsController::class, 'index'])->name('get.statistics');
 
     //üzemanyag oldal route-ok
     Route::get('/fuel-tracker', [FuelController::class, 'index'])->name('get.fuelData');
@@ -37,5 +40,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     //biztosítás oldal route-ok
     Route::get('/insurance-tracker', [InsuranceController::class, 'index'])->name('get.insuranceData');
-    Route::post('/insurance-store', [InsuranceController::class, 'store'])->name('insurance.storeData');
+    Route::post('/insurance-store', [InsuranceController::class, 'store'])->name('store.insuranceData');
+    Route::put('/insurance-update/{id}', [InsuranceController::class, 'update'])->name('update.insuranceData');
+    Route::delete('/insurance-delete/{id}', [InsuranceController::class, 'destroy'])->name('destroy.insuranceData');
 });

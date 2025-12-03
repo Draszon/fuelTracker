@@ -30,6 +30,35 @@ const storeInsuranceData = () => {
   });
 }
 
+const loadSelectedInsurance = (selected) => {
+  form.reset();
+  editActive = true;
+  form.id = selected.id;
+  form.car_id = selected.car_id;
+  form.insturance_type = selected.insturance_type;
+  form.provider = selected.provider;
+  form.cost = selected.cost;
+  form.valid_from = selected.valid_from;
+  form.valid_until = selected.valid_until;
+  form.notes = selected.notes;
+}
+
+const updateSelectedInsurance = (id) => {
+  form.put(`/insurance-update/${id}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset();
+      editActive = false;
+    }
+  });
+}
+
+const deleteSelectedInsurance = (id) => {
+  router.delete(`/insurance-delete/${id}`, {
+    preserveScroll: true
+  });
+}
+
 </script>
 
 <template>
@@ -44,7 +73,7 @@ const storeInsuranceData = () => {
     <div class="px-2 xl:px-10">
       <h2 class="font-bold text-2xl mb-5">Biztosítási adatok feltöltése</h2>
       
-      <form @submit.prevent="storeInsuranceData">
+      <form @submit.prevent="editActive ? updateSelectedInsurance(form.id) : storeInsuranceData()">
         <div class="flex flex-col mb-5">
           <label for="car">Válaszd ki a kocsit</label>
           <select required v-model="form.car_id" id="car"
@@ -59,6 +88,15 @@ const storeInsuranceData = () => {
         <div class="flex flex-col mb-5">
           <label for="provider">Szolgáltató</label>
           <input type="text" placeholder="Alfa biztosító" required id="provider" v-model="form.provider"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="insurance-type">Szolgáltató</label>
+          <input type="text" placeholder="Kötelező / casco" required id="insurance-type" v-model="form.insturance_type"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -119,9 +157,9 @@ const storeInsuranceData = () => {
               <li class="flex-none w-32">Kocsi</li>
               <li class="flex-none w-32">Szolgáltató</li>
               <li class="flex-none w-32">Biztosítás ára</li>
-              <li class="flex-none w-64">Érv. kezdete</li>
+              <li class="flex-none w-32">Érv. kezdete</li>
               <li class="flex-none w-32">Érv. vége</li>
-              <li class="flex-none w-32">Egyéb jegyzetek</li>
+              <li class="flex-none w-64">Egyéb jegyzetek</li>
               <li class="flex-none w-32">Műveletek</li>
             </ul>
           </div>
@@ -134,14 +172,14 @@ const storeInsuranceData = () => {
               <li class="flex justify-center items-center w-32">{{ insuranceData.car.name }}</li>
               <li class="flex justify-center items-center w-32">{{ insuranceData.provider }}</li>
               <li class="flex justify-center items-center w-32">{{ insuranceData.cost }} Ft</li>
-              <li class="flex justify-center items-center w-64">{{ insuranceData.valid_from }}</li>
+              <li class="flex justify-center items-center w-32">{{ insuranceData.valid_from }}</li>
               <li class="flex justify-center items-center w-32">{{ insuranceData.valid_until }}</li>
-              <li class="flex justify-center items-center w-32">{{ insuranceData.notes }}</li>
+              <li class="flex justify-center items-center w-64">{{ insuranceData.notes }}</li>
               <li class="w-32 flex justify-center items-center gap-5">
-                <button @click="destroy(serviceData.id)"
+                <button @click="deleteSelectedInsurance(insuranceData.id)"
                   class="px-2 h-8 rounded bg-red-500 text-white">Törlés</button>
                 
-                <button @click="loadSelectedService(serviceData)"
+                <button @click="loadSelectedInsurance(insuranceData)"
                   class="py-1 h-8 px-2 rounded bg-gray-500 text-white">Szerk.</button>
               </li>
             </ul>
