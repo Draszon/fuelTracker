@@ -94,12 +94,12 @@ defineProps({
         <div class="px-2 mb-10 rounded-lg sm:flex sm:flex-wrap sm:gap-5">
           <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
             <h3 class="text-lg font-medium">Össz. szervizköltség</h3>
-            <p class="text-2xl">32500 Ft</p>
+            <p class="text-2xl">{{ statisticMonth.total_cost }} Ft</p>
           </div>
 
           <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
             <h3 class="text-lg font-medium">Javítások száma</h3>
-            <p class="text-2xl">3 db</p>
+            <p class="text-2xl">{{ statisticMonth.service_count }} db</p>
           </div>
         </div>
 
@@ -107,12 +107,12 @@ defineProps({
         <div class="px-2 mb-10 rounded-lg sm:flex sm:flex-wrap sm:gap-5">
           <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
             <h3 class="text-lg font-medium">Össz. szervizköltség</h3>
-            <p class="text-2xl">158437 Ft</p>
+            <p class="text-2xl">{{ statisticsYear.total_cost }} Ft</p>
           </div>
 
           <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
             <h3 class="text-lg font-medium">Javítások száma</h3>
-            <p class="text-2xl">10 db</p>
+            <p class="text-2xl">{{ statisticsYear.service_count }} db</p>
           </div>
         </div>
       </div>

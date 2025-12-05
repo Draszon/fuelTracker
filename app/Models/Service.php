@@ -29,6 +29,7 @@ class Service extends Model
             ->whereMonth('date', $date->month);
     }
 
+    #[Scope]
     protected function year(Builder $query, Carbon $date) {
         return $query
             ->whereYear('date', $date->year);

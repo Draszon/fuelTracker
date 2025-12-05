@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
 use App\Models\Fuel;
 use App\Models\Service;
 use Carbon\Carbon;
