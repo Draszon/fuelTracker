@@ -4,26 +4,50 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Models\Fuel;
+use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class StatisticsController extends Controller
 {
+    //local scope segítségével hónap és év szerint a modellben leszűrt
+    //adatokat megkapja és összegzi vagy átlagolja, majd
+    //kirendereli a nézetet és átadja neki a propsokat
     public function index() {
-        //a főoldalon megjelenő adatok lekérdezése és szűrése
-        //alapértelmezetten: kocsi, üzemanyag, szerviz, biztosítás
-        $cars = Car::all();
-
         $now = Carbon::now();
 
-        $fuelMoneyMonthSum = Fuel::whereYear('date', $now->year)
-            ->whereMonth('date', $now->month)
-            ->sum('money');
+        $fuelMonth = [
+            'total_liter'       => Fuel::month($now)->sum('quantity'),
+            'total_km'          => Fuel::month($now)->sum('km'),
+            'total_cost'        => Fuel::month($now)->sum('money'),
+            'avg_consumption'   => round(Fuel::month($now)->avg('consumption') ?? 0 , 1),
+            'monthly_fuel_count'=> Fuel::month($now)->count(),
+        ];
+
+        $fuelYear = [
+            'total_liter'       => Fuel::year($now)->sum('quantity'),
+            'total_km'          => Fuel::year($now)->sum('km'),
+            'total_cost'        => Fuel::year($now)->sum('money'),
+            'avg_consumption'   => round(Fuel::year($now)->avg('consumption') ?? 0 , 1),
+            'yearly_fuel_count' => Fuel::year($now)->count(),
+        ];
+
+        $statisticMonth = [
+            'total_cost'    => Service::month($now)->sum('cost'),
+            'service_count' => Service::month($now)->count(),
+        ];
+
+        $statisticsYear = [
+            'total_cost'    => Service::year($now)->sum('cost'),
+            'service_count' => Service::year($now)->count(),
+        ];
 
         return Inertia::render('Statistics', [
-            'cars' => $cars,
-            'fuelMoneyMonthSum' => $fuelMoneyMonthSum,
+            'fuelMonth'         => $fuelMonth,
+            'fuelYear'          => $fuelYear,
+            'statisticMonth'    => $statisticMonth,
+            'statisticsYear'    => $statisticsYear,
         ]);
     }
 }

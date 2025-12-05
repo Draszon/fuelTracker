@@ -25,7 +25,7 @@ watch(flashMessage, (val) => {
 });
 
 //a form mezői amit később feldolgoz
-let form = useForm({
+const form = useForm({
   id: null,
   car_id: '',
   date: '',
