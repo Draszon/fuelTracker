@@ -12,7 +12,7 @@ class StatisticsController extends Controller
 {
     //local scope segítségével hónap és év szerint a modellben leszűrt
     //adatokat megkapja és összegzi vagy átlagolja, majd
-    //kirendereli a nézetet és átadja neki a propsokat
+    //átadja props ként a nézetnek
     public function index() {
         $now = Carbon::now();
 
@@ -32,7 +32,7 @@ class StatisticsController extends Controller
             'yearly_fuel_count' => Fuel::year($now)->count(),
         ];
 
-        $statisticMonth = [
+        $statisticsMonth = [
             'total_cost'    => Service::month($now)->sum('cost'),
             'service_count' => Service::month($now)->count(),
         ];
@@ -45,7 +45,7 @@ class StatisticsController extends Controller
         return Inertia::render('Statistics', [
             'fuelMonth'         => $fuelMonth,
             'fuelYear'          => $fuelYear,
-            'statisticMonth'    => $statisticMonth,
+            'statisticsMonth'   => $statisticsMonth,
             'statisticsYear'    => $statisticsYear,
         ]);
     }

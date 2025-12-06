@@ -14,10 +14,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    /*Route::get('/', function() {
-        return Inertia::render('Statistics');
-    })->name('main');*/
-
+    //főoldal (statisztikai oldal) route-ok
     Route::get('/', [StatisticsController::class, 'index'])->name('get.statistics');
 
     //üzemanyag oldal route-ok
