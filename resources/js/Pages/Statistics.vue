@@ -3,11 +3,16 @@ import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
 
-defineProps({
+const props = defineProps({
   fuelMonth: Object,
   fuelYear: Object,
   statisticsMonth: Object,
-  statisticsYear: Object
+  statisticsYear: Object,
+  carDatas: Array
+});
+
+onMounted(() => {
+  console.log(props);
 });
 
 </script>
@@ -23,6 +28,20 @@ defineProps({
     <div class="px-2 xl:px-10">
       <div class="overflow-x-auto">
         <h2 class="font-bold text-2xl mb-5">Üzemanyag statisztika</h2>
+
+        <!--<div class="mb-5">
+          <h2 class="font-semibold mb-2">Szűrés kocsira</h2>
+          <select required v-model="selectedCarId" id="car"
+          class="rounded-lg border-gray-200 shadow-none max-w-80
+          focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+          focus:shadow-lg transition ease-in-out w-56">
+            <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
+          </select>
+          <button @click="selectedCarId = null"
+          class="transition ease-in-out delay-150 text-white
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 ml-5"
+          >Szűrő törlése</button>
+        </div>-->
 
         <h2 class="font-bold text-2xl">Havi</h2>
         <div class="px-2 mb-10 rounded-lg sm:flex sm:flex-wrap sm:gap-5">

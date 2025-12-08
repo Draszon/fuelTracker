@@ -92,10 +92,6 @@ const filteredFuelData = computed(() => {
   return props.fuelDatas.filter(f => f.car_id === selectedCarId.value);
 });
 
-const deleteFilter = () => {
-  //Itt tartok, most a szűrési feltétel törlését akarom megírni
-}
-
 </script>
 
 <template>
@@ -193,8 +189,11 @@ const deleteFilter = () => {
           focus:shadow-lg transition ease-in-out w-56">
             <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
           </select>
+          <button @click="selectedCarId = null"
+          class="transition ease-in-out delay-150 text-white
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 ml-5"
+          >Szűrő törlése</button>
         </div>
-
         
         <div class="min-w-max bg-gray-200 rounded border-b-2 border-gray-300 shadow-md">
           <div class="h-10 flex justify-center items-center">

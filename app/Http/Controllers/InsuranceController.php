@@ -13,20 +13,20 @@ class InsuranceController extends Controller
         $insuranceDatas = Insurance::with('car')->get();
         $carDatas = Car::all();
         return Inertia::render('InsuranceTracker', [
-            'insuranceDatas' => $insuranceDatas,
-            'carDatas' => $carDatas,
+            'insuranceDatas'    => $insuranceDatas,
+            'carDatas'          => $carDatas,
         ]);
     }
 
     public function store(Request $request) {
         $request->validate([
-            'car_id' => 'required',
-            'insturance_type' => 'required|string',
-            'provider' => 'required|string',
-            'cost' => 'required|integer',
-            'valid_from' => 'required|date',
-            'valid_until' => 'required|date',
-            'notes' => 'required|string',
+            'car_id'            => 'required',
+            'insturance_type'   => 'required|string',
+            'provider'          => 'required|string',
+            'cost'              => 'required|integer',
+            'valid_from'        => 'required|date',
+            'valid_until'       => 'required|date',
+            'notes'             => 'required|string',
         ]);
 
         try {
@@ -45,13 +45,13 @@ class InsuranceController extends Controller
 
     public function update(Request $request, $id) {
         $request->validate([
-            'car_id' => 'required',
-            'insturance_type' => 'required|string',
-            'provider' => 'required|string',
-            'cost' => 'required|integer',
-            'valid_from' => 'required|date',
-            'valid_until' => 'required|date',
-            'notes' => 'required|string',
+            'car_id'            => 'required',
+            'insturance_type'   => 'required|string',
+            'provider'          => 'required|string',
+            'cost'              => 'required|integer',
+            'valid_from'        => 'required|date',
+            'valid_until'       => 'required|date',
+            'notes'             => 'required|string',
         ]);
 
         try {

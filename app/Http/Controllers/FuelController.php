@@ -63,8 +63,4 @@ class FuelController extends Controller
             return redirect()->back()->with('message', 'Hiba módosítás közben: ' . $e->getMessage());
         }
     }
-
-    public function filter() {
-        
-    }
 }

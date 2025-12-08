@@ -9,6 +9,7 @@ const props = defineProps({
 });
 
 let editActive = false;
+const selectedCarId = ref(null);
 
 const form = useForm({
   id: null,
@@ -58,6 +59,11 @@ const deleteSelectedInsurance = (id) => {
     preserveScroll: true
   });
 }
+
+const filteredInsuranceTracker = computed(() => {
+  if(!selectedCarId.value) return props.insuranceDatas;
+  return props.insuranceDatas.filter(f => f.car_id === selectedCarId.value);
+});
 
 </script>
 
@@ -151,6 +157,20 @@ const deleteSelectedInsurance = (id) => {
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
       <div class="overflow-x-auto">
+        <div class="mb-5">
+          <h2 class="font-semibold mb-2">Szűrés kocsira</h2>
+          <select required v-model="selectedCarId" id="car"
+          class="rounded-lg border-gray-200 shadow-none max-w-80
+          focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+          focus:shadow-lg transition ease-in-out w-56">
+            <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
+          </select>
+          <button @click="selectedCarId = null"
+          class="transition ease-in-out delay-150 text-white
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 ml-5"
+          >Szűrő törlése</button>
+        </div>
+
         <div class="min-w-max bg-gray-200 rounded border-b-2 border-gray-300 shadow-md">
           <div class="h-10 flex justify-center items-center">
             <ul class="flex flex-row gap-5 text-center font-medium">
@@ -166,7 +186,7 @@ const deleteSelectedInsurance = (id) => {
         </div>
 
         <div class="min-w-max border-b border-gray-300">
-          <div v-for="insuranceData in insuranceDatas" :key="insuranceData.id"
+          <div v-for="insuranceData in filteredInsuranceTracker" :key="insuranceData.id"
             class="flex justify-center items-center border-b py-2">
             <ul class="flex flex-row gap-5 text-center font-medium">
               <li class="flex justify-center items-center w-32">{{ insuranceData.car.name }}</li>

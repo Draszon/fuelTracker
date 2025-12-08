@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Car;
 use App\Models\Fuel;
 use App\Models\Service;
 use Carbon\Carbon;
@@ -47,6 +48,7 @@ class StatisticsController extends Controller
             'fuelYear'          => $fuelYear,
             'statisticsMonth'   => $statisticsMonth,
             'statisticsYear'    => $statisticsYear,
+            'carDatas'          => Car::all(),
         ]);
     }
 }
