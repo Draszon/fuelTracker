@@ -21,6 +21,7 @@ let form  = useForm({
   name: '',
   licence_plate: '',
   car_type: '',
+  average_fuel_consumption: '',
   year: '',
   oil_change_cycle_km: '',
   oil_change_cycle_year: '',
@@ -49,6 +50,7 @@ const loadSelectedCar = (selected) => {
   form.name = selected.name,
   form.licence_plate = selected.licence_plate,
   form.car_type = selected.car_type,
+  form.average_fuel_consumption = selected.average_fuel_consumption,
   form.year = selected.year,
   form.oil_change_cycle_km = selected.oil_change_cycle_km,
   form.oil_change_cycle_year = selected.oil_change_cycle_year,
@@ -97,6 +99,15 @@ const updateCar = (id) => {
         <div class="flex flex-col mb-5">
           <label for="type">Típus:</label>
           <input type="text" placeholder="Suzuki Swift" required v-model="form.car_type" id="type"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="nav-avg">NAV szerinti átlagfogyasztás:</label>
+          <input type="number" placeholder="8,6" required step="0.01" v-model="form.average_fuel_consumption" id="nav-avg"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -173,6 +184,11 @@ const updateCar = (id) => {
             <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Típusa:</p>
               <p>{{ carData.car_type }}</p>
+            </div>
+
+            <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">NAV szerinti átlagfogyasztás:</p>
+              <p>{{ carData.average_fuel_consumption }} l/100km</p>
             </div>
 
             <div class="py-3 border-b border-gray-300">

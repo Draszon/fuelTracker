@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('monthly_car_travel_logs', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('cars', function (Blueprint $table) {
+            $table->integer('average_fuel_consumption')->nullable()->after('car_type');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('monthly_car_travel_logs');
+        Schema::table('cars', function (Blueprint $table) {
+            $table->dropColumn('average_fuel_consumption');
+        });
     }
 };

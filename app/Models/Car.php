@@ -11,6 +11,7 @@ class Car extends Model
         'name',
         'licence_plate',
         'car_type',
+        'average_fuel_consumption',
         'year',
         'oil_change_cycle_km',
         'oil_change_cycle_year',
