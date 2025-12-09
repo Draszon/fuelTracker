@@ -1,6 +1,6 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
-import { Head, useForm, router, usePage } from '@inertiajs/vue3';
+import { Head, useForm, router, usePage, Link } from '@inertiajs/vue3';
 import { computed, ref, onMounted, watch } from 'vue';
 
 //props-ban megkapja a backend-től az adatokat
@@ -104,7 +104,16 @@ const filteredFuelData = computed(() => {
 <section class="my-10">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
+
+      
+
       <h2 class="font-bold text-2xl mb-2">Üzemanyag adatok feltöltése / módosítása:</h2>
+
+      <div class="my-5">
+        <Link href="#" class="transition ease-in-out delay-150 text-white
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Útiköltség kalkulátor</Link>
+      </div>
+      
 
       <p v-if="message" class="font-medium text-red-500">
         {{ message }}

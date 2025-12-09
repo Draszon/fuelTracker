@@ -16,6 +16,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
 
     //főoldal (statisztikai oldal) route-ok
     Route::get('/', [StatisticsController::class, 'index'])->name('get.statistics');
+    Route::get('/filtered-statistics', [StatisticsController::class, 'filteredStatistic'])->name('filtered.stats');
 
     //üzemanyag oldal route-ok
     Route::get('/fuel-tracker', [FuelController::class, 'index'])->name('get.fuelData');
@@ -40,4 +41,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::post('/insurance-store', [InsuranceController::class, 'store'])->name('store.insuranceData');
     Route::put('/insurance-update/{id}', [InsuranceController::class, 'update'])->name('update.insuranceData');
     Route::delete('/insurance-delete/{id}', [InsuranceController::class, 'destroy'])->name('destroy.insuranceData');
+
+    //útiköltség kalkulátor route-ok
+    
 });

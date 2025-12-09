@@ -1,7 +1,7 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { Head, useForm, router, usePage } from '@inertiajs/vue3';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
 const props = defineProps({
   fuelMonth: Object,
@@ -11,9 +11,24 @@ const props = defineProps({
   carDatas: Array
 });
 
-onMounted(() => {
-  console.log(props);
+const selectedCarId = ref(null);
+
+watch(selectedCarId, (id, oldId) => {
+  if(!id) {
+    router.get('/', {}, {
+      preserveScroll: true,
+      preserveState: true
+    });
+    return;
+  }
+
+  router.get('/filtered-statistics', { car_id: id }, {
+    preserveScroll: true,
+    preserveState: true
+  });
+  
 });
+
 
 </script>
 
@@ -29,7 +44,7 @@ onMounted(() => {
       <div class="overflow-x-auto">
         <h2 class="font-bold text-2xl mb-5">Üzemanyag statisztika</h2>
 
-        <!--<div class="mb-5">
+        <div class="mb-5">
           <h2 class="font-semibold mb-2">Szűrés kocsira</h2>
           <select required v-model="selectedCarId" id="car"
           class="rounded-lg border-gray-200 shadow-none max-w-80
@@ -41,7 +56,7 @@ onMounted(() => {
           class="transition ease-in-out delay-150 text-white
           rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 ml-5"
           >Szűrő törlése</button>
-        </div>-->
+        </div>
 
         <h2 class="font-bold text-2xl">Havi</h2>
         <div class="px-2 mb-10 rounded-lg sm:flex sm:flex-wrap sm:gap-5">

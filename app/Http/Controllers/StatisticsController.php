@@ -51,4 +51,42 @@ class StatisticsController extends Controller
             'carDatas'          => Car::all(),
         ]);
     }
+
+    public function filteredStatistic(Request $request) {
+        $now = Carbon::now();
+
+        $fuelMonth = [
+            'total_liter'       => Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity'),
+            'total_km'          => Fuel::month($now)->where('car_id', $request->car_id)->sum('km'),
+            'total_cost'        => Fuel::month($now)->where('car_id', $request->car_id)->sum('money'),
+            'avg_consumption'   => round(Fuel::month($now)->where('car_id', $request->car_id)->sum('consumption') ?? 0 , 1),
+            'monthly_fuel_count'=> Fuel::month($now)->where('car_id', $request->car_id)->count(),
+        ];
+
+        $fuelYear = [
+            'total_liter'       => Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity'),
+            'total_km'          => Fuel::year($now)->where('car_id', $request->car_id)->sum('km'),
+            'total_cost'        => Fuel::year($now)->where('car_id', $request->car_id)->sum('money'),
+            'avg_consumption'   => round(Fuel::year($now)->where('car_id', $request->car_id)->sum('consumption') ?? 0 , 1),
+            'yearly_fuel_count' => Fuel::year($now)->where('car_id', $request->car_id)->count(),
+        ];
+
+        $statisticsMonth = [
+            'total_cost'    => Service::month($now)->where('car_id', $request->car_id)->sum('cost'),
+            'service_count' => Service::month($now)->where('car_id', $request->car_id)->count(),
+        ];
+
+        $statisticsYear = [
+            'total_cost'    => Service::year($now)->where('car_id', $request->car_id)->sum('cost'),
+            'service_count' => Service::year($now)->where('car_id', $request->car_id)->count(),
+        ];
+
+        return Inertia::render('Statistics', [
+            'fuelMonth'         => $fuelMonth,
+            'fuelYear'          => $fuelYear,
+            'statisticsMonth'   => $statisticsMonth,
+            'statisticsYear'    => $statisticsYear,
+            'carDatas'          => Car::all(),
+        ]);
+    }
 }
