@@ -54,22 +54,36 @@ class StatisticsController extends Controller
 
     public function filteredStatistic(Request $request) {
         $now = Carbon::now();
+        $sumMonthKm = Fuel::month($now)->where('car_id', $request->car_id)->sum('km');
+        $sumMonthFuel = Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity');
+        $sumYearKm = Fuel::year($now)->where('car_id', $request->car_id)->sum('km');
+        $sumYearFuel = Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity');
 
         $fuelMonth = [
             'total_liter'       => Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity'),
             'total_km'          => Fuel::month($now)->where('car_id', $request->car_id)->sum('km'),
             'total_cost'        => Fuel::month($now)->where('car_id', $request->car_id)->sum('money'),
-            'avg_consumption'   => round(Fuel::month($now)->where('car_id', $request->car_id)->sum('consumption') ?? 0 , 1),
             'monthly_fuel_count'=> Fuel::month($now)->where('car_id', $request->car_id)->count(),
         ];
+
+        if($sumMonthKm == 0 || $sumMonthFuel == 0) {
+            $fuelMonth['avg_consumption'] = 0;
+        } else {
+            $fuelMonth['avg_consumption'] = round(($sumMonthFuel / $sumMonthKm) * 100);
+        }
 
         $fuelYear = [
             'total_liter'       => Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity'),
             'total_km'          => Fuel::year($now)->where('car_id', $request->car_id)->sum('km'),
             'total_cost'        => Fuel::year($now)->where('car_id', $request->car_id)->sum('money'),
-            'avg_consumption'   => round(Fuel::year($now)->where('car_id', $request->car_id)->sum('consumption') ?? 0 , 1),
             'yearly_fuel_count' => Fuel::year($now)->where('car_id', $request->car_id)->count(),
         ];
+
+        if($sumYearKm == 0 || $sumYearFuel == 0) {
+            $fuelYear['avg_consumption'] = 0;
+        } else {
+            $fuelYear['avg_consumption'] = round(($sumYearFuel / $sumYearKm) * 100);
+        }
 
         $statisticsMonth = [
             'total_cost'    => Service::month($now)->where('car_id', $request->car_id)->sum('cost'),
