@@ -16,22 +16,36 @@ class StatisticsController extends Controller
     //átadja props ként a nézetnek
     public function index() {
         $now = Carbon::now();
+        $sumMonthKm = Fuel::month($now)->sum('km');
+        $sumMonthFuel = Fuel::month($now)->sum('quantity');
+        $sumYearKm = Fuel::year($now)->sum('km');
+        $sumYearFuel = Fuel::year($now)->sum('quantity');
 
         $fuelMonth = [
             'total_liter'       => Fuel::month($now)->sum('quantity'),
             'total_km'          => Fuel::month($now)->sum('km'),
             'total_cost'        => Fuel::month($now)->sum('money'),
-            'avg_consumption'   => round(Fuel::month($now)->avg('consumption') ?? 0 , 1),
             'monthly_fuel_count'=> Fuel::month($now)->count(),
         ];
+
+        if($sumMonthKm == 0 || $sumMonthFuel == 0) {
+            $fuelMonth['avg_consumption'] = 0;
+        } else {
+            $fuelMonth['avg_consumption'] = round((($sumMonthFuel / $sumMonthKm) * 100) ?? 0 , 1);
+        }
 
         $fuelYear = [
             'total_liter'       => Fuel::year($now)->sum('quantity'),
             'total_km'          => Fuel::year($now)->sum('km'),
             'total_cost'        => Fuel::year($now)->sum('money'),
-            'avg_consumption'   => round(Fuel::year($now)->avg('consumption') ?? 0 , 1),
             'yearly_fuel_count' => Fuel::year($now)->count(),
         ];
+
+        if($sumYearKm == 0 || $sumYearFuel == 0) {
+            $fuelYear['avg_consumption'] = 0;
+        } else {
+            $fuelYear['avg_consumption'] = round((($sumYearFuel / $sumYearKm) * 100) ?? 0 , 1);
+        }
 
         $statisticsMonth = [
             'total_cost'    => Service::month($now)->sum('cost'),
@@ -69,7 +83,7 @@ class StatisticsController extends Controller
         if($sumMonthKm == 0 || $sumMonthFuel == 0) {
             $fuelMonth['avg_consumption'] = 0;
         } else {
-            $fuelMonth['avg_consumption'] = round(($sumMonthFuel / $sumMonthKm) * 100);
+            $fuelMonth['avg_consumption'] = round((($sumMonthFuel / $sumMonthKm) * 100) ?? 0 , 1);
         }
 
         $fuelYear = [
@@ -82,7 +96,7 @@ class StatisticsController extends Controller
         if($sumYearKm == 0 || $sumYearFuel == 0) {
             $fuelYear['avg_consumption'] = 0;
         } else {
-            $fuelYear['avg_consumption'] = round(($sumYearFuel / $sumYearKm) * 100);
+            $fuelYear['avg_consumption'] = round((($sumYearFuel / $sumYearKm) * 100) ?? 0 , 1);
         }
 
         $statisticsMonth = [
