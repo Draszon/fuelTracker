@@ -15,7 +15,12 @@ class Car extends Model
         'year',
         'oil_change_cycle_km',
         'oil_change_cycle_year',
-        'break_oil_cycle_km',
+        'break_oil_cycle_year',
+        'inspection_valid_from',
+        'inspection_valid_until',
+        'last_oil_change_km',
+        'last_oil_change_date',
+        'last_break_oil_change_date',
     ];
 
     public function fuels(): HasMany {

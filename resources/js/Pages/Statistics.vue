@@ -8,7 +8,8 @@ const props = defineProps({
   fuelYear: Object,
   statisticsMonth: Object,
   statisticsYear: Object,
-  carDatas: Array
+  carDatas: Array,
+  periodicMaintenances: Object
 });
 
 const selectedCarId = ref(null);
@@ -29,7 +30,6 @@ watch(selectedCarId, (id, oldId) => {
   
 });
 
-
 </script>
 
 <template>
@@ -41,9 +41,51 @@ watch(selectedCarId, (id, oldId) => {
 <section class="my-10">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
-      <h2 class="font-bold text-2xl mb-5">Időszakos karbantartások ideje</h2>
-      
-      
+      <div class="mb-5">
+        <h2 class="font-semibold mb-2">Szűrés gépjárműre</h2>
+        <select required v-model="selectedCarId" id="car"
+        class="rounded-lg border-gray-200 shadow-none max-w-80
+        focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+        focus:shadow-lg transition ease-in-out w-56">
+          <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
+        </select>
+        <button @click="selectedCarId = null"
+        class="transition ease-in-out delay-150 text-white
+        rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 my-5 sm:ml-5"
+        >Szűrő törlése</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="my-10">
+  <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
+    <div class="px-2 xl:px-10">
+      <div class="mb-5">
+        <h2 class="font-bold text-2xl mb-5">Időszakos karbantartások</h2>
+
+        <div class="px-2 mb-10 rounded-lg sm:flex sm:flex-wrap sm:gap-5">
+          <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
+            <h3 class="text-lg font-medium">Következő olajcsere ideje</h3>
+            <p class="text-2xl">{{ periodicMaintenances.next_oil_change_date }}</p>
+          </div>
+
+          <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
+            <h3 class="text-lg font-medium">Következő olajcsere km</h3>
+            <p class="text-2xl">{{ periodicMaintenances.next_oil_change_km }} km</p>
+          </div>
+
+          <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
+            <h3 class="text-lg font-medium">Következő fékolajcsere ideje</h3>
+            <p class="text-2xl">{{ periodicMaintenances.next_break_oil_change_date }}</p>
+          </div>
+
+          <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
+            <h3 class="text-lg font-medium">Műszaki érvényesség vége</h3>
+            <p class="text-2xl">{{ periodicMaintenances.inspection_valid_until }}</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -53,20 +95,6 @@ watch(selectedCarId, (id, oldId) => {
     <div class="px-2 xl:px-10">
       <div class="overflow-x-auto">
         <h2 class="font-bold text-2xl mb-5">Üzemanyag statisztika</h2>
-
-        <div class="mb-5">
-          <h2 class="font-semibold mb-2">Szűrés kocsira</h2>
-          <select required v-model="selectedCarId" id="car"
-          class="rounded-lg border-gray-200 shadow-none max-w-80
-          focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
-          focus:shadow-lg transition ease-in-out w-56">
-            <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
-          </select>
-          <button @click="selectedCarId = null"
-          class="transition ease-in-out delay-150 text-white
-          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 my-5 sm:ml-5"
-          >Szűrő törlése</button>
-        </div>
 
         <h2 class="font-bold text-2xl">Havi</h2>
         <div class="px-2 mb-10 rounded-lg sm:flex sm:flex-wrap sm:gap-5">

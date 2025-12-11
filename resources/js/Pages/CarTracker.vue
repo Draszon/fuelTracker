@@ -24,8 +24,13 @@ let form  = useForm({
   average_fuel_consumption: '',
   year: '',
   oil_change_cycle_km: '',
+  last_oil_change_km: '',
   oil_change_cycle_year: '',
-  break_oil_cycle_km: ''
+  last_oil_change_date: '',
+  break_oil_cycle_year: '',
+  last_break_oil_change_date: '',
+  inspection_valid_until: '',
+  inspection_valid_from: '',
 });
 
 const store = () => {
@@ -53,8 +58,13 @@ const loadSelectedCar = (selected) => {
   form.average_fuel_consumption = selected.average_fuel_consumption,
   form.year = selected.year,
   form.oil_change_cycle_km = selected.oil_change_cycle_km,
+  form.last_oil_change_km = selected.last_oil_change_km,
   form.oil_change_cycle_year = selected.oil_change_cycle_year,
-  form.break_oil_cycle_km = selected.break_oil_cycle_km
+  form.last_oil_change_date = selected.last_oil_change_date
+  form.break_oil_cycle_year = selected.break_oil_cycle_year,
+  form.last_break_oil_change_date = selected.last_break_oil_change_date,
+  form.inspection_valid_until = selected.inspection_valid_until,
+  form.inspection_valid_from = selected.inspection_valid_from
 }
 
 const updateCar = (id) => {
@@ -142,6 +152,15 @@ const updateCar = (id) => {
         </div>
 
         <div class="flex flex-col mb-5">
+          <label for="last-oil-change-cycle-km">Utolsó olajcsere (km)</label>
+          <input type="number" placeholder="156223" required v-model="form.last_oil_change_km" id="last-oil-change-cycle-km"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
           <label for="oil-change-cycle-year">Olajcsere ciklus (év)</label>
           <input type="number" placeholder="2" required v-model="form.oil_change_cycle_year" id="oil-change-cycle-year"
             class="rounded-lg border-gray-200 shadow-none max-w-80
@@ -151,8 +170,44 @@ const updateCar = (id) => {
         </div>
 
         <div class="flex flex-col mb-5">
+          <label for="last-oil-change-cycle-date">Utolsó olajcsere</label>
+          <input type="date" placeholder="2024-05-22" required v-model="form.last_oil_change_date" id="last-oil-change-cycle-date"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
           <label for="break-oil-cycle-km">Fékolaj csere ciklus (év)</label>
-          <input type="number" placeholder="2" required v-model="form.break_oil_cycle_km" id="break-oil-cycle-km"
+          <input type="number" placeholder="2" required v-model="form.break_oil_cycle_year" id="break-oil-cycle-km"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="last-break-oil-cycle-date">Utolsó fékolaj csere</label>
+          <input type="date" placeholder="2024-05-22" required v-model="form.last_break_oil_change_date" id="last-break-oil-cycle-date"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="inspection-start">Műszaki érvényesség kezdete</label>
+          <input type="date" required v-model="form.inspection_valid_from" id="inspection-start"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="inspection-end">Műszaki érvényesség vége</label>
+          <input type="date" required v-model="form.inspection_valid_until" id="inspection-end"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -207,13 +262,38 @@ const updateCar = (id) => {
             </div>
 
             <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">Utolsó olajcsere (km):</p>
+              <p>{{ carData.last_oil_change_km }}</p>
+            </div>
+
+            <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Olajcsere ciklus (év):</p>
               <p>{{ carData.oil_change_cycle_year }} év</p>
             </div>
 
             <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">Utolsó olajcsere:</p>
+              <p>{{ carData.last_oil_change_date }}</p>
+            </div>
+
+            <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Fékolaj csere ciklus (év):</p>
-              <p>{{ carData.break_oil_cycle_km }} év</p>
+              <p>{{ carData.break_oil_cycle_year }} év</p>
+            </div>
+
+            <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">Utolsó fékolaj csere:</p>
+              <p>{{ carData.last_break_oil_change_date }}</p>
+            </div>
+
+            <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">Műszaki érvényesség kezdete:</p>
+              <p>{{ carData.inspection_valid_from }}</p>
+            </div>
+
+            <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">Műszaki érvényesség vége:</p>
+              <p>{{ carData.inspection_valid_until }}</p>
             </div>
           </div>
           <div class="flex flex-col gap-5">

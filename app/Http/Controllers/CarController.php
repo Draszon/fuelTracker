@@ -18,14 +18,19 @@ class CarController extends Controller
 
     public function store(Request $request) {
         $request->validate([
-            'name' => 'required|string',
-            'licence_plate' => 'required|string',
-            'car_type' => 'required|string',
-            'average_fuel_consumption' => 'required|numeric',
-            'year' => 'required|numeric',
-            'oil_change_cycle_km' => 'required|numeric',
-            'oil_change_cycle_year' => 'required|numeric',
-            'break_oil_cycle_km' => 'required|numeric',
+            'name'                      => 'required|string',
+            'licence_plate'             => 'required|string',
+            'car_type'                  => 'required|string',
+            'average_fuel_consumption'  => 'required|numeric',
+            'year'                      => 'required|numeric',
+            'oil_change_cycle_km'       => 'required|numeric',
+            'last_oil_change_km'        => 'required|numeric',
+            'oil_change_cycle_year'     => 'required|numeric',
+            'last_oil_change_date'      => 'required|date',
+            'break_oil_cycle_year'      => 'required|numeric',
+            'last_break_oil_change_date' => 'required|date',
+            'inspection_valid_until'    => 'required|date',
+            'inspection_valid_from'     => 'required|date',
         ]);
 
         try {
@@ -44,14 +49,19 @@ class CarController extends Controller
 
     public function update(Request $request, $id) {
         $validated = $request->validate([
-            'name' => 'required|string',
-            'licence_plate' => 'required|string',
-            'car_type' => 'required|string',
-            'average_fuel_consumption' => 'required|numeric',
-            'year' => 'required|numeric',
-            'oil_change_cycle_km' => 'required|numeric',
-            'oil_change_cycle_year' => 'required|numeric',
-            'break_oil_cycle_km' => 'required|numeric',
+            'name'                      => 'required|string',
+            'licence_plate'             => 'required|string',
+            'car_type'                  => 'required|string',
+            'average_fuel_consumption'  => 'required|numeric',
+            'year'                      => 'required|numeric',
+            'oil_change_cycle_km'       => 'required|numeric',
+            'last_oil_change_km'        => 'required|numeric',
+            'oil_change_cycle_year'     => 'required|numeric',
+            'last_oil_change_date'      => 'required|date',
+            'break_oil_cycle_year'      => 'required|numeric',
+            'last_break_oil_change_date' => 'required|date',
+            'inspection_valid_until'    => 'required|date',
+            'inspection_valid_from'     => 'required|date',
         ]);
 
         try {

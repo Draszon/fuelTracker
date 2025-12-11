@@ -21,6 +21,13 @@ class StatisticsController extends Controller
         $sumYearKm = Fuel::year($now)->sum('km');
         $sumYearFuel = Fuel::year($now)->sum('quantity');
 
+        $periodicMaintenances = [
+            'next_oil_change_date' => 0,
+            'next_oil_change_km' => 0,
+            'next_break_oil_change_date' => 0,
+            'inspection_valid_until' => 0,
+        ];
+
         $fuelMonth = [
             'total_liter'       => Fuel::month($now)->sum('quantity'),
             'total_km'          => Fuel::month($now)->sum('km'),
@@ -63,15 +70,28 @@ class StatisticsController extends Controller
             'statisticsMonth'   => $statisticsMonth,
             'statisticsYear'    => $statisticsYear,
             'carDatas'          => Car::all(),
+            'periodicMaintenances'  => $periodicMaintenances,
         ]);
     }
 
     public function filteredStatistic(Request $request) {
         $now = Carbon::now();
+        $carDatas = Car::find($request->car_id);
         $sumMonthKm = Fuel::month($now)->where('car_id', $request->car_id)->sum('km');
         $sumMonthFuel = Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity');
         $sumYearKm = Fuel::year($now)->where('car_id', $request->car_id)->sum('km');
         $sumYearFuel = Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity');
+
+        $periodicMaintenances = [
+            'next_oil_change_date' => Carbon::parse($carDatas->last_oil_change_date)
+                ->addYears($carDatas->oil_change_cycle_year)
+                ->toDateString(),
+            'next_oil_change_km' => $carDatas->last_oil_change_km + $carDatas->oil_change_cycle_km,
+            'next_break_oil_change_date' => Carbon::parse($carDatas->last_break_oil_change_date)
+                ->addYears($carDatas->break_oil_cycle_year)
+                ->toDateString(),
+            'inspection_valid_until' => $carDatas->inspection_valid_until,
+        ];
 
         $fuelMonth = [
             'total_liter'       => Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity'),
@@ -110,11 +130,12 @@ class StatisticsController extends Controller
         ];
 
         return Inertia::render('Statistics', [
-            'fuelMonth'         => $fuelMonth,
-            'fuelYear'          => $fuelYear,
-            'statisticsMonth'   => $statisticsMonth,
-            'statisticsYear'    => $statisticsYear,
-            'carDatas'          => Car::all(),
+            'fuelMonth'             => $fuelMonth,
+            'fuelYear'              => $fuelYear,
+            'statisticsMonth'       => $statisticsMonth,
+            'statisticsYear'        => $statisticsYear,
+            'carDatas'              => Car::all(),
+            'periodicMaintenances'  => $periodicMaintenances,
         ]);
     }
 }
