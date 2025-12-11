@@ -143,7 +143,7 @@ const filteredServiceData = computed(() => {
           </select>
           <button @click="selectedCarId = null"
           class="transition ease-in-out delay-150 text-white
-          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 ml-5"
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 my-5 sm:ml-5"
           >Szűrő törlése</button>
         </div>
 

@@ -41,6 +41,16 @@ watch(selectedCarId, (id, oldId) => {
 <section class="my-10">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
+      <h2 class="font-bold text-2xl mb-5">Időszakos karbantartások ideje</h2>
+      
+      
+    </div>
+  </div>
+</section>
+
+<section class="my-10">
+  <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
+    <div class="px-2 xl:px-10">
       <div class="overflow-x-auto">
         <h2 class="font-bold text-2xl mb-5">Üzemanyag statisztika</h2>
 
@@ -54,7 +64,7 @@ watch(selectedCarId, (id, oldId) => {
           </select>
           <button @click="selectedCarId = null"
           class="transition ease-in-out delay-150 text-white
-          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 ml-5"
+          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 my-5 sm:ml-5"
           >Szűrő törlése</button>
         </div>
 
