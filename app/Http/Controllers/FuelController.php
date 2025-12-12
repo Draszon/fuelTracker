@@ -20,6 +20,7 @@ class FuelController extends Controller
     }
 
     public function store(Request $request) {
+        $car = Car::find($request->car_id);
         $request->validate([
             'car_id' => 'required',
             'date' => 'required|date',
@@ -31,6 +32,8 @@ class FuelController extends Controller
         ]);
 
         try {
+            $car->current_km = $car->current_km + $request->quantity;
+            $car->save();
             Fuel::create($request->all());
             return redirect()->back()->with('message', 'Sikeres adatfeltöltés!');
         } catch (\Exception $e) {

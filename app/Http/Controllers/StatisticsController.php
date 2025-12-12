@@ -24,6 +24,7 @@ class StatisticsController extends Controller
         $periodicMaintenances = [
             'next_oil_change_date' => 0,
             'next_oil_change_km' => 0,
+            'oil_change_km_left' => 0,
             'next_break_oil_change_date' => 0,
             'inspection_valid_until' => 0,
         ];
@@ -81,12 +82,14 @@ class StatisticsController extends Controller
         $sumMonthFuel = Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity');
         $sumYearKm = Fuel::year($now)->where('car_id', $request->car_id)->sum('km');
         $sumYearFuel = Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity');
+        $next_oil_change_km = $carDatas->last_oil_change_km + $carDatas->oil_change_cycle_km;
 
         $periodicMaintenances = [
             'next_oil_change_date' => Carbon::parse($carDatas->last_oil_change_date)
                 ->addYears($carDatas->oil_change_cycle_year)
                 ->toDateString(),
-            'next_oil_change_km' => $carDatas->last_oil_change_km + $carDatas->oil_change_cycle_km,
+            'next_oil_change_km' => $next_oil_change_km,
+            'oil_change_km_left' => $next_oil_change_km - $carDatas->current_km,
             'next_break_oil_change_date' => Carbon::parse($carDatas->last_break_oil_change_date)
                 ->addYears($carDatas->break_oil_cycle_year)
                 ->toDateString(),

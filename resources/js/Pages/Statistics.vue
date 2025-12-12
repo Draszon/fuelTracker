@@ -73,6 +73,8 @@ watch(selectedCarId, (id, oldId) => {
           <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">
             <h3 class="text-lg font-medium">Következő olajcsere km</h3>
             <p class="text-2xl">{{ periodicMaintenances.next_oil_change_km }} km</p>
+            <h3 class="text-lg font-medium">Hátravan</h3>
+            <p class="text-2xl">{{ periodicMaintenances.oil_change_km_left }} km</p>
           </div>
 
           <div class="bg-gray-100 rounded-2xl shadow-sm w-full p-5 my-5 sm:max-w-[350px]">

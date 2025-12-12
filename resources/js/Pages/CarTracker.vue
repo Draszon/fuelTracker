@@ -23,6 +23,7 @@ let form  = useForm({
   car_type: '',
   average_fuel_consumption: '',
   year: '',
+  current_km: '',
   oil_change_cycle_km: '',
   last_oil_change_km: '',
   oil_change_cycle_year: '',
@@ -57,6 +58,7 @@ const loadSelectedCar = (selected) => {
   form.car_type = selected.car_type,
   form.average_fuel_consumption = selected.average_fuel_consumption,
   form.year = selected.year,
+  form.current_km = selected.current_km,
   form.oil_change_cycle_km = selected.oil_change_cycle_km,
   form.last_oil_change_km = selected.last_oil_change_km,
   form.oil_change_cycle_year = selected.oil_change_cycle_year,
@@ -136,6 +138,15 @@ const updateCar = (id) => {
         <div class="flex flex-col mb-5">
           <label for="year">Gyártás éve</label>
           <input type="number" placeholder="2008" required v-model="form.year" id="year"
+            class="rounded-lg border-gray-200 shadow-none max-w-80
+            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
+            focus:shadow-lg transition ease-in-out"
+          >
+        </div>
+
+        <div class="flex flex-col mb-5">
+          <label for="current-km">Km óra állása</label>
+          <input type="number" placeholder="112544" required v-model="form.current_km" id="current-km"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
             focus:shadow-lg transition ease-in-out"
@@ -257,13 +268,18 @@ const updateCar = (id) => {
             </div>
 
             <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">Km óra állása:</p>
+              <p>{{ carData.current_km }}</p>
+            </div>
+
+            <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Olajcsere ciklus (km):</p>
               <p>{{ carData.oil_change_cycle_km }} km</p>
             </div>
 
             <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Utolsó olajcsere (km):</p>
-              <p>{{ carData.last_oil_change_km }}</p>
+              <p>{{ carData.last_oil_change_km }} km</p>
             </div>
 
             <div class="py-3 border-b border-gray-300">

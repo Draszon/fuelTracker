@@ -13,6 +13,7 @@ class Car extends Model
         'car_type',
         'average_fuel_consumption',
         'year',
+        'current_km',
         'oil_change_cycle_km',
         'oil_change_cycle_year',
         'break_oil_cycle_year',
