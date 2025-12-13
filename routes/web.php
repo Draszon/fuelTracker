@@ -21,7 +21,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     //üzemanyag oldal route-ok
     Route::get('/fuel-tracker', [FuelController::class, 'index'])->name('get.fuelData');
     Route::post('/fuel-store', [FuelController::class, 'store'])->name('store.fuelData');
-    Route::delete('/fuel-delete/{id}', [FuelController:: class, 'destroy'])->name('destroy.fuelData');
+    Route::delete('/fuel-delete/{id}', [FuelController::class, 'destroy'])->name('destroy.fuelData');
     Route::put('/fuel-update/{id}', [FuelController::class, 'update'])->name('update.fuelData');
 
     //kocsi adatok oldal route-ok

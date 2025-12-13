@@ -51,8 +51,13 @@ function store() {
 }
 
 //a kiválasztott eleme id-ját elküldi backendnek törlésre
-function deleteFuelData(id) {
+//és visszaírja a km-t az aktuális km-hez
+function deleteFuelData(id, km, car_id) {
   router.delete(`/fuel-delete/${id}`, {
+    data: {
+      km,
+      car_id
+    },
     preserveScroll: true
   });
 }
@@ -69,7 +74,7 @@ function loadSelectedData(selected) {
   form.quantity = selected.quantity;
   form.km = selected.km;
   form.consumption = selected.consumption;
-  form.money = selected.money;  
+  form.money = selected.money;
 }
 
 //elküldi a backendnek a frissíteni kívánt elem adatait miután
@@ -231,7 +236,7 @@ const filteredFuelData = computed(() => {
               <li class="flex justify-center items-center w-32">{{ Number(fuelData.consumption).toFixed(1) }} l/100km</li>
               <li class="flex justify-center items-center w-32">{{ fuelData.money }} Ft</li>
               <li class="w-32 flex gap-5">
-                <button @click="deleteFuelData(fuelData.id)"
+                <button @click="deleteFuelData(fuelData.id, fuelData.km, fuelData.car_id)"
                   class="py-1 px-2 rounded bg-red-500 text-white">Törlés</button>
                 
                 <button @click="loadSelectedData(fuelData)"
