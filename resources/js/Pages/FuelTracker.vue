@@ -110,8 +110,6 @@ const filteredFuelData = computed(() => {
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
 
-      
-
       <h2 class="font-bold text-2xl mb-2">Üzemanyag adatok feltöltése / módosítása:</h2>
 
       <div class="my-5">

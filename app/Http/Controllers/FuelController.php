@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Models\Fuel;
+use DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class FuelController extends Controller
 {
-    //az alap oldalon megjelenő adatok lekérése és átküldése a nézetnek
+    /**
+     * Üzemanyag nyilvántartó alapoldal megjelenítése.
+     *
+     * - Lekéri az összes tankolási adatot dátum szerint csökkenő sorrendben
+     * - Betölti a kapcsolódó autó adatokat
+     * - Átküldi az adatokat az Inertia nézetnek
+     */
     public function index() {
         $fuelDatas = Fuel::with('car')->orderBy('date', 'desc')->get();
         $carDatas = Car::all();
@@ -20,11 +27,14 @@ class FuelController extends Controller
         ]);
     }
 
-    //üzemanyag feltöltése esetén validálom a beérkező adatokat
-    //a hozzá tartozó kocsiadatokat lekérdezem a beküldött car_id alapján
-    //kiszámolom, hogy mennyi a feltöltés után a jelenlegi km óra állása
+    /**
+     * Új üzemanyag bejegyzés létrehozása.
+     *
+     * A mentés hatással van az adott autó aktuális kilométeróra állására,
+     * ezért a tankolt km érték hozzáadásra kerül az autóhoz.
+     */
     public function store(Request $request) {
-        $car = Car::find($request->car_id);
+        
         $validated = $request->validate([
             'car_id'        => 'required',
             'date'          => 'required|date',
@@ -36,26 +46,46 @@ class FuelController extends Controller
         ]);
 
         try {
-            $car->current_km += $request->km;
-            $car->save();
-            Fuel::create($validated);
+            DB::transaction(function() use($validated, $request) {
+                $car = Car::findOrFail($request->car_id);
+
+                //A tankolás növeli az autó aktuális km óra állását.
+                $car->current_km += $request->km;
+                $car->save();
+                Fuel::create($validated);
+            });
             return redirect()->back()->with('message', 'Sikeres adatfeltöltés!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('message', 'Hiba az adatok feltöltése közben: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('message', 'Hiba az adatok feltöltése közben.');
         }
     }
-
-    //törlöm a kijelölt adatot, de előtte mivel törlök viszsa kell írnom 
-    //a beír km-t a jelenlegi km órára, mert ez az adat mégsem létezett
+    
+    /**
+     * Üzemanyag bejegyzés törlése.
+     *
+     * A törlés visszavonja az adott tankolás által növelt
+     * kilométeróra állást, mivel az adat megszűnik.
+     */
     public function destroy(Request $request, $id) {
-        $car = Car::find($request->car_id);
-        $car->current_km -= $request->km;
-        $car->save();
-        $selectedToDelete = Fuel::findOrFail($id);
-        $selectedToDelete->delete();
+        DB::transaction(function() use($request, $id) {
+            $car = Car::findOrFail($request->car_id);
+
+            //A törölt tankolás km érték levonjuk az aktuális állásból
+            $car->current_km -= $request->km;
+            $car->save();
+
+            $selectedToDelete = Fuel::findOrFail($id);
+            $selectedToDelete->delete();
+        });
         return redirect()->back()->with('message', 'Sikeres adattörlés!');
     }
 
+    /**
+     * Üzemanyag bejegyzés frissítése.
+     *
+     * Mivel a km érték módosulhat, csak a régi és az új km
+     * különbsége kerül elszámolásra az autó aktuális állásában.
+     */
     public function update(Request $request, $id) {        
         $validated = $request->validate([
             'date'          => 'required|date',
@@ -66,20 +96,25 @@ class FuelController extends Controller
             'consumption'   => 'required|numeric',
             'money'         => 'required|numeric|min:0',
         ]);
-        //FONTOS: MÉG AZT KELL MEGOLDANI, HOGY AMIKOR FRISSÍTI AZ
-        //ADATOKAT AKKOR A CURRENT KM A MÓDOSÍTÁSSAL EGYÜTT NÖVEKEDJEN VAGY CSÖKKENJEN!!!
+
+        
+
         try {
-            $car = Car::find($request->car_id);
-            $fuelData = Fuel::findOrFail($id);
+            DB::transaction(function() use($request, $id, $validated) {
+                $car = Car::findOrFail($request->car_id);
+                $fuelData = Fuel::findOrFail($id);
 
-            $delta = $validated["km"] - $fuelData->km;
-            $car->current_km += $delta;
-            $car->save();
+                //Csak a különbséget számoljuk el, hogy ne duplázzuk a km óra állást.
+                $delta = $validated["km"] - $fuelData->km;
+                $car->current_km += $delta;
+                $car->save();
 
-            $fuelData->update($validated);
+                $fuelData->update($validated);
+            });
+            
             return redirect()->back()->with('message', 'Sikeres adatmódosítás!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('message', 'Hiba módosítás közben: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('message', 'Hiba módosítás közben.');
         }
     }
 }

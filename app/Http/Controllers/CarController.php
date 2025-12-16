@@ -8,6 +8,12 @@ use Inertia\Inertia;
 
 class CarController extends Controller
 {
+    /**
+     * Kocsik nyilvántartó oldal megjelenítése.
+     * 
+     * - Lekéri az össze kocsi adatát
+     * - Átküldi az adatokat az inertia nézetnek
+     */
     public function index() {
         $carDatas = Car::all();
         
@@ -16,6 +22,12 @@ class CarController extends Controller
         ]);
     }
 
+    /**
+     * Kocsi adatainak tárolásáért felel
+     * 
+     * A kocsi összes adata itt kerül feltöltésre az adatbázisba.
+     * 
+     */
     public function store(Request $request) {
         $request->validate([
             'name'                      => 'required|string',
@@ -41,13 +53,24 @@ class CarController extends Controller
             return redirect()->back()->with('message', 'Hiba a feltöltés közben: ' . $e->getMessage());
         }
     }
-
+    
+    /**
+     * Kocsik törléséért felel az adatbázisból
+     * 
+     * A kiválasztott kocsi id alapján való törlését végzi.
+     */
     public function destroy($id) {
         $selected = Car::findOrFail($id);
         $selected->delete();
         return redirect()->back()->with('message', 'Sikeres adattörlés!');
     }
 
+    /**
+     * A kocsik adatainak frissítéséért felel
+     * 
+     * Minden tulajdonság frissíthető
+     * 
+     */
     public function update(Request $request, $id) {
         $validated = $request->validate([
             'name'                      => 'required|string',

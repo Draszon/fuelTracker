@@ -10,7 +10,7 @@ const props = defineProps({
 const page = usePage();
 const flashMessage = computed(() => page.props.flash?.message);
 const message = ref(flashMessage.value);
-let editActive = false;
+let editActive = ref(false);
 let addNewCar = ref(false);
 const btnTitle = {
   'store': 'Feltöltés',
@@ -39,6 +39,7 @@ const store = () => {
     preserveScroll: true,
     onSuccess: () => {
       form.reset();
+      addNewCar.value = false;
     }
   });
 }
@@ -50,7 +51,7 @@ const deleteCar = (selected) => {
 }
 
 const loadSelectedCar = (selected) => {
-  editActive = true;
+  editActive.value = true;
   form.reset();
   form.id = selected.id,
   form.name = selected.name,
@@ -74,9 +75,10 @@ const updateCar = (id) => {
     preserveScroll: true,
     onSuccess: () => {
       form.reset();
+      addNewCar.value = false;
+      editActive.value = false;
     }
   });
-  editActive = false;
 }
 
 </script>
@@ -225,7 +227,7 @@ const updateCar = (id) => {
           >
         </div>
 
-        <button type="submit" @click="addNewCar = false" class="transition ease-in-out delay-150 text-white
+        <button type="submit" class="transition ease-in-out delay-150 text-white
             rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? btnTitle.update : btnTitle.store }}</button>
       </form>
     </div>
