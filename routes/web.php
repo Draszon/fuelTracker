@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Auth\AdminUserController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\FuelController;
 use App\Http\Controllers\InsuranceController;
@@ -10,6 +12,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',])->group(function () {
+    Route::middleware('can:manage-users')->group(function () {
+        Route::resource('/admin/users', AdminUserController::class);
+    });
+
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
