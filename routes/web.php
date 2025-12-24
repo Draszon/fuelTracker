@@ -18,7 +18,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     //felhasználó hozzáadása admin jogosultággal rendelkezőknek
     Route::get('/user/add', [AdminUserController::class, 'index'])
         ->name('add.user')
-        ->middleware('can:register-user');
+        ->middleware('checkRole');
         
     Route::post('/register', [AdminUserController::class, 'create'])->name('register');
 

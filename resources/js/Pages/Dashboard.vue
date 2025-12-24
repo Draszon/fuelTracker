@@ -21,6 +21,10 @@ const page = usePage();
                         <p>{{ page.props.flash.success }}</p>
                     </div>
 
+                    <div v-if="page.props.flash?.message" class="font-bold mx-8 mt-10 text-red-500">
+                        <p>{{ page.props.flash.message }}</p>
+                    </div>
+
                     <Welcome />
                 </div>
             </div>

@@ -29,7 +29,7 @@ class AdminUserController extends Controller
             ]);
             return redirect()->route('dashboard')->with('success', 'Sikeres regisztráció!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('message', 'Hiba a felhasználó egisztrációja közben: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Hiba a felhasználó regisztrációja közben: ' . $e->getMessage());
         }
     }
 }

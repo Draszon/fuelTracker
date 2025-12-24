@@ -8,7 +8,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
             <h1 class="text-xl font-bold">Üdv a Dashboardon!</h1>
 
             <div class="mt-5">
-                <p>Itt tudod kezelni a saját adataidat, ha pedig admin vagy Új felhasználót is regisztrálhatsz!</p>
+                <p>Itt tudod kezelni az adataidat!</p>
             </div>
         </div>
     </div>
