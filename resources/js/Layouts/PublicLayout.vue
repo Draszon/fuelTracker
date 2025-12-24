@@ -23,7 +23,7 @@ const mobileMenu = ref(false);
       <Link href="/fuel-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Üzemanyag nyilvántartó</li></Link>
       <Link href="/service-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Szerviznapló</li></Link>
       <Link href="/insurance-tracker" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Biztosítási adatok</li></Link>
-      <Link href="/admin/users" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Új felhasználó</li></Link>
+      <Link href="/dashboard" class="hover:text-gray-500 transition ease-in-out duration-150"><li>Dashboard</li></Link>
       <form @submit.prevent="logout">
         <button type="submit">Kijelentkezés</button>
       </form>
@@ -39,6 +39,7 @@ const mobileMenu = ref(false);
     <Link href="/fuel-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Üzemanyag nyilvántartó</li></Link>
     <Link href="/service-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Szerviznapló</li></Link>
     <Link href="/insurance-tracker" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Biztosítási adatok</li></Link>
+    <Link href="/dashboard" class="hover:text-gray-500 transition ease-in-out duration-150 menu-btn"><li>Bdashboard</li></Link>
     <form @submit.prevent="logout">
         <button type="submit">Kijelentkezés</button>
       </form>

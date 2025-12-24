@@ -50,6 +50,12 @@ const logout = () => {
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
                                 </NavLink>
+                                <NavLink :href="route('add.user')" :active="route().current('add.user')">
+                                    Új Felhasználó
+                                </NavLink>
+                                <NavLink :href="route('get.statistics')" :active="route().current('get.statistics')">
+                                    Car Tracker
+                                </NavLink>
                             </div>
                         </div>
 
@@ -134,11 +140,11 @@ const logout = () => {
                                     <template #content>
                                         <!-- Account Management -->
                                         <div class="block px-4 py-2 text-xs text-gray-400">
-                                            Manage Account
+                                            Fiók kezelése
                                         </div>
 
                                         <DropdownLink :href="route('profile.show')">
-                                            Profile
+                                            Profil
                                         </DropdownLink>
 
                                         <DropdownLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')">
@@ -150,7 +156,7 @@ const logout = () => {
                                         <!-- Authentication -->
                                         <form @submit.prevent="logout">
                                             <DropdownLink as="button">
-                                                Log Out
+                                                Kijelentkezés
                                             </DropdownLink>
                                         </form>
                                     </template>
@@ -193,6 +199,14 @@ const logout = () => {
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
                         </ResponsiveNavLink>
+
+                        <ResponsiveNavLink :href="route('add.user')" :active="route().current('add.user')">
+                            Új felhasználó
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink :href="route('get.statistics')" :active="route().current('get.statistics')">
+                            Car Tracker
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -214,7 +228,7 @@ const logout = () => {
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.show')" :active="route().current('profile.show')">
-                                Profile
+                                Profil
                             </ResponsiveNavLink>
 
                             <ResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')" :active="route().current('api-tokens.index')">
@@ -224,7 +238,7 @@ const logout = () => {
                             <!-- Authentication -->
                             <form method="POST" @submit.prevent="logout">
                                 <ResponsiveNavLink as="button">
-                                    Log Out
+                                    Kijelentkezés
                                 </ResponsiveNavLink>
                             </form>
 

@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AuthenticationCard from '@/Components/AuthenticationCard.vue';
 import AuthenticationCardLogo from '@/Components/AuthenticationCardLogo.vue';
 import Checkbox from '@/Components/Checkbox.vue';
@@ -13,18 +13,24 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    isAdmin: '',
     terms: false,
 });
 
+const page = usePage();
+
 const submit = () => {
+    if (form.isAdmin === '') form.isAdmin = false;
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
+
+
 </script>
 
 <template>
-    <Head title="Register" />
+    <Head title="Regisztráció" />
 
     <AuthenticationCard>
         <template #logo>
@@ -32,8 +38,12 @@ const submit = () => {
         </template>
 
         <form @submit.prevent="submit">
+            <div v-if="page.props.flash.message">
+                <p>{{ page.props.flash.message }}</p>
+            </div>
+            
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="Név" />
                 <TextInput
                     id="name"
                     v-model="form.name"
@@ -60,7 +70,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                <InputLabel for="password" value="Jelszó" />
                 <TextInput
                     id="password"
                     v-model="form.password"
@@ -73,7 +83,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password_confirmation" value="Confirm Password" />
+                <InputLabel for="password_confirmation" value="Jelszó ismét" />
                 <TextInput
                     id="password_confirmation"
                     v-model="form.password_confirmation"
@@ -83,6 +93,17 @@ const submit = () => {
                     autocomplete="new-password"
                 />
                 <InputError class="mt-2" :message="form.errors.password_confirmation" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="is-admin" value="Admin felhasználó?"/>
+                <input 
+                    type="checkbox"
+                    name="is-admin"
+                    id="is-admin"
+                    class="rounded"
+                    v-model="form.isAdmin"
+                >
             </div>
 
             <div v-if="$page.props.jetstream.hasTermsAndPrivacyPolicyFeature" class="mt-4">
@@ -100,7 +121,7 @@ const submit = () => {
 
             <div class="flex items-center justify-end mt-4">
                 <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Register
+                    Regisztráció
                 </PrimaryButton>
             </div>
         </form>

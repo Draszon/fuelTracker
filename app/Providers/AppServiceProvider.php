@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use Gate;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 
@@ -20,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('register-user', function (User $user) {
+            return $user->is_admin;
+        });
+
         Inertia::share([
             'flash' => function () {
                 return [
