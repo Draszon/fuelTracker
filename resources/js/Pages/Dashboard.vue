@@ -17,7 +17,7 @@ const page = usePage();
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                    <div v-if="page.props.flash?.success" class="mx-8 mt-10 text-green-600">
+                    <div v-if="page.props.flash?.success"   class="mx-8 mt-10 text-green-600">
                         <p>{{ page.props.flash.success }}</p>
                     </div>
 

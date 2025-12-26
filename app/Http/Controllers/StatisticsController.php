@@ -10,38 +10,38 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 /**
- * StatisticsController
- *
- * Ez a controller kezeli a statisztikai adatok kiszámítását és megjelenítését.
- * Tartalmaz általános havi/éves statisztikákat üzemanyag-fogyasztásról,
- * szolgáltatásokról és karbantartási emlékeztetőkről.
- * Használja az Inertia.js-t a Vue komponensekhez való adatátadáshoz.
+ * Statisztikák kezelését végző controller.
+ * 
+ * Ez a controller felelős az üzemanyag-fogyasztási és szervizelési statisztikák
+ * kiszámításáért és megjelenítéséért. Támogatja az általános (összes autó) és
+ * autó-specifikus statisztikák lekérdezését havi és éves bontásban.
+ * Karbantartási emlékeztetőket is számol (olajcsere, fékolaj csere, műszaki vizsga).
  */
 class StatisticsController extends Controller
 {
     /**
-     * index() - Általános statisztikák megjelenítése
-     *
-     * Ez a metódus kiszámítja a jelenlegi hónap és év általános statisztikáit
-     * minden autó számára. Számítja az üzemanyag-fogyasztást, költségeket,
-     * átlagfogyasztást és szolgáltatási adatokat.
-     * A Fuel és Service modellek local scope-jaival (month, year) szűri az adatokat.
-     *
-     * @return \Inertia\Response
+     * Általános statisztikák megjelenítése (összes autó).
+     * 
+     * Kiszámítja a jelenlegi hónap és év általános statisztikáit minden autó számára.
+     * Tartalmazza az üzemanyag-fogyasztást (összes liter, km, költség),
+     * átlagfogyasztást (l/100km), valamint a szervizelési adatokat (költség, darabszám).
+     * A Fuel és Service modellek month() és year() scope-jaival szűri az adatokat.
+     * 
+     * @return \Inertia\Response Inertia válasz a Statistics nézettel és statisztikai adatokkal
      */
     public function index() {
-        // Aktuális dátum lekérése Carbon-nal
+        // Aktuális dátum lekérése
         $now = Carbon::now();
 
-        // Havi adatok összegzése (összes km és liter minden autóhoz)
+        // Havi összesítések számításához (átlagfogyasztás kalkulációhoz)
         $sumMonthKm = Fuel::month($now)->sum('km');
         $sumMonthFuel = Fuel::month($now)->sum('quantity');
 
-        // Éves adatok összegzése
+        // Éves összesítések számításához
         $sumYearKm = Fuel::year($now)->sum('km');
         $sumYearFuel = Fuel::year($now)->sum('quantity');
 
-        // Karbantartási emlékeztetők alapértelmezett értékei (még nem számított)
+        // Karbantartási emlékeztetők alapértelmezett értékei (szűrés nélküli nézetnél nem használt)
         $periodicMaintenances = [
             'next_oil_change_date' => 0,
             'next_oil_change_km' => 0,
@@ -50,22 +50,22 @@ class StatisticsController extends Controller
             'inspection_valid_until' => 0,
         ];
 
-        // Havi üzemanyag statisztikák tömbje
+        // Havi üzemanyag statisztikák összegyűjtése
         $fuelMonth = [
-            'total_liter'       => Fuel::month($now)->sum('quantity'), // Összes liter havi
-            'total_km'          => Fuel::month($now)->sum('km'),       // Összes km havi
-            'total_cost'        => Fuel::month($now)->sum('money'),    // Összes költség havi
-            'monthly_fuel_count'=> Fuel::month($now)->count(),         // Tankolások száma havi
+            'total_liter'       => Fuel::month($now)->sum('quantity'),
+            'total_km'          => Fuel::month($now)->sum('km'),
+            'total_cost'        => Fuel::month($now)->sum('money'),
+            'monthly_fuel_count'=> Fuel::month($now)->count(),
         ];
 
-        // Átlagfogyasztás számítása havi (l/100km), nullázás ha nincs adat
+        // Havi átlagfogyasztás számítása (l/100km), nullázás ha nincs adat
         if($sumMonthKm == 0 || $sumMonthFuel == 0) {
             $fuelMonth['avg_consumption'] = 0;
         } else {
             $fuelMonth['avg_consumption'] = round((($sumMonthFuel / $sumMonthKm) * 100) ?? 0 , 1);
         }
 
-        // Éves üzemanyag statisztikák tömbje
+        // Éves üzemanyag statisztikák összegyűjtése
         $fuelYear = [
             'total_liter'       => Fuel::year($now)->sum('quantity'),
             'total_km'          => Fuel::year($now)->sum('km'),
@@ -73,79 +73,79 @@ class StatisticsController extends Controller
             'yearly_fuel_count' => Fuel::year($now)->count(),
         ];
 
-        // Átlagfogyasztás számítása éves
+        // Éves átlagfogyasztás számítása (l/100km)
         if($sumYearKm == 0 || $sumYearFuel == 0) {
             $fuelYear['avg_consumption'] = 0;
         } else {
             $fuelYear['avg_consumption'] = round((($sumYearFuel / $sumYearKm) * 100) ?? 0 , 1);
         }
 
-        // Havi szolgáltatási statisztikák (szerviz költségek)
+        // Havi szervizelési statisztikák
         $statisticsMonth = [
             'total_cost'    => Service::month($now)->sum('cost'),
             'service_count' => Service::month($now)->count(),
         ];
 
-        // Éves szolgáltatási statisztikák
+        // Éves szervizelési statisztikák
         $statisticsYear = [
             'total_cost'    => Service::year($now)->sum('cost'),
             'service_count' => Service::year($now)->count(),
         ];
 
-        // Adatok átadása az Inertia Statistics komponensnek
+        // Adatok átadása a frontend számára
         return Inertia::render('Statistics', [
             'fuelMonth'         => $fuelMonth,
             'fuelYear'          => $fuelYear,
             'statisticsMonth'   => $statisticsMonth,
             'statisticsYear'    => $statisticsYear,
-            'carDatas'          => Car::all(), // Összes autó adatai
-            'periodicMaintenances'  => $periodicMaintenances, // Karbantartási adatok (alapértelmezetten 0)
+            'carDatas'          => Car::all(),
+            'periodicMaintenances'  => $periodicMaintenances,
         ]);
     }
 
     /**
-     * filteredStatistic() - Autóra szűrt statisztikák
-     *
-     * Ez a metódus egy adott autó (car_id alapján) statisztikáit számítja ki.
-     * Számítja a havi/éves üzemanyag és szolgáltatási adatokat,
-     * valamint a karbantartási emlékeztetőket (olajcsere, műszaki vizsga stb.).
-     * A Fuel és Service modellek local scope-jaival szűri az adatokat az adott autóra.
-     *
-     * @param Request $request - Tartalmazza a car_id-t
-     * @return \Inertia\Response
+     * Autóra szűrt statisztikák megjelenítése.
+     * 
+     * Kiszámítja egy adott autó (car_id alapján) statisztikáit a jelenlegi hónapra és évre.
+     * Tartalmazza az üzemanyag-fogyasztást, átlagfogyasztást, szervizelési adatokat,
+     * valamint a karbantartási emlékeztetőket (olajcsere dátum/km, fékolaj csere, műszaki vizsga).
+     * A Fuel és Service modellek month() és year() scope-jaival szűri az adatokat.
+     * 
+     * @param  \Illuminate\Http\Request  $request A car_id paramétert tartalmazó kérés
+     * @return \Inertia\Response Inertia válasz a Statistics nézettel és szűrt statisztikai adatokkal
      */
     public function filteredStatistic(Request $request) {
-        // Aktuális dátum
+        // Aktuális dátum lekérése
         $now = Carbon::now();
 
-        // Kiválasztott autó adatai
+        // Kiválasztott autó adatainak betöltése
         $carDatas = Car::find($request->car_id);
 
-        // Havi adatok összegzése az adott autóhoz
+        // Havi összesítések számításához (adott autóra szűrve)
         $sumMonthKm = Fuel::month($now)->where('car_id', $request->car_id)->sum('km');
         $sumMonthFuel = Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity');
 
-        // Éves adatok összegzése az adott autóhoz
+        // Éves összesítések számításához (adott autóra szűrve)
         $sumYearKm = Fuel::year($now)->where('car_id', $request->car_id)->sum('km');
         $sumYearFuel = Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity');
 
-        // Következő olajcsere km számítása (utolsó olajcsere + ciklus)
+        // Következő olajcsere km-óra állásának kiszámítása
         $next_oil_change_km = $carDatas->last_oil_change_km + $carDatas->oil_change_cycle_km;
 
-        // Karbantartási emlékeztetők számítása
+        // Karbantartási emlékeztetők kiszámítása a kiválasztott autóra
         $periodicMaintenances = [
             'next_oil_change_date' => Carbon::parse($carDatas->last_oil_change_date)
-                ->addYears($carDatas->oil_change_cycle_year) // Következő olajcsere dátum
+                ->addYears($carDatas->oil_change_cycle_year)
                 ->toDateString(),
-            'next_oil_change_km' => $next_oil_change_km, // Következő olajcsere km
-            'oil_change_km_left' => $next_oil_change_km - $carDatas->current_km, // Hány km van hátra
+            'next_oil_change_km' => $next_oil_change_km,
+            'oil_change_km_left' => $next_oil_change_km - $carDatas->current_km,
             'next_break_oil_change_date' => Carbon::parse($carDatas->last_break_oil_change_date)
-                ->addYears($carDatas->break_oil_cycle_year) // Következő fékolaj csere dátum
+                ->addYears($carDatas->break_oil_cycle_year)
                 ->toDateString(),
-            'inspection_valid_until' => $carDatas->inspection_valid_until, // Műszaki vizsga érvényessége
+            'inspection_valid_until' => $carDatas->inspection_valid_until,
         ];
 
-        // Havi üzemanyag statisztikák az adott autóhoz
+        // Havi üzemanyag statisztikák összegyűjtése (adott autóra szűrve)
         $fuelMonth = [
             'total_liter'       => Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity'),
             'total_km'          => Fuel::month($now)->where('car_id', $request->car_id)->sum('km'),
@@ -153,14 +153,14 @@ class StatisticsController extends Controller
             'monthly_fuel_count'=> Fuel::month($now)->where('car_id', $request->car_id)->count(),
         ];
 
-        // Átlagfogyasztás számítása havi az adott autóhoz
+        // Havi átlagfogyasztás számítása (l/100km), nullázás ha nincs adat
         if($sumMonthKm == 0 || $sumMonthFuel == 0) {
             $fuelMonth['avg_consumption'] = 0;
         } else {
             $fuelMonth['avg_consumption'] = round((($sumMonthFuel / $sumMonthKm) * 100) ?? 0 , 1);
         }
 
-        // Éves üzemanyag statisztikák az adott autóhoz
+        // Éves üzemanyag statisztikák összegyűjtése (adott autóra szűrve)
         $fuelYear = [
             'total_liter'       => Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity'),
             'total_km'          => Fuel::year($now)->where('car_id', $request->car_id)->sum('km'),
@@ -168,33 +168,33 @@ class StatisticsController extends Controller
             'yearly_fuel_count' => Fuel::year($now)->where('car_id', $request->car_id)->count(),
         ];
 
-        // Átlagfogyasztás számítása éves az adott autóhoz
+        // Éves átlagfogyasztás számítása (l/100km), nullázás ha nincs adat
         if($sumYearKm == 0 || $sumYearFuel == 0) {
             $fuelYear['avg_consumption'] = 0;
         } else {
             $fuelYear['avg_consumption'] = round((($sumYearFuel / $sumYearKm) * 100) ?? 0 , 1);
         }
 
-        // Havi szolgáltatási statisztikák az adott autóhoz
+        // Havi szervizelési statisztikák (adott autóra szűrve)
         $statisticsMonth = [
             'total_cost'    => Service::month($now)->where('car_id', $request->car_id)->sum('cost'),
             'service_count' => Service::month($now)->where('car_id', $request->car_id)->count(),
         ];
 
-        // Éves szolgáltatási statisztikák az adott autóhoz
+        // Éves szervizelési statisztikák (adott autóra szűrve)
         $statisticsYear = [
             'total_cost'    => Service::year($now)->where('car_id', $request->car_id)->sum('cost'),
             'service_count' => Service::year($now)->where('car_id', $request->car_id)->count(),
         ];
 
-        // Adatok átadása az Inertia Statistics komponensnek
+        // Adatok átadása a frontend számára
         return Inertia::render('Statistics', [
             'fuelMonth'             => $fuelMonth,
             'fuelYear'              => $fuelYear,
             'statisticsMonth'       => $statisticsMonth,
             'statisticsYear'        => $statisticsYear,
-            'carDatas'              => Car::all(), // Összes autó listája (szűréshez)
-            'periodicMaintenances'  => $periodicMaintenances, // Számított karbantartási adatok
+            'carDatas'              => Car::all(),
+            'periodicMaintenances'  => $periodicMaintenances,
         ]);
     }
 }

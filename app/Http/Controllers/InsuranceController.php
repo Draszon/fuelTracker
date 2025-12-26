@@ -7,8 +7,22 @@ use App\Models\Insurance;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
+/**
+ * Biztosítások kezelését végző controller.
+ * 
+ * Ez a controller felelős a járművek biztosításainak CRUD műveleteiért,
+ * valamint a biztosítások megjelenítéséhez szükséges adatok szolgáltatásáért.
+ */
 class InsuranceController extends Controller
 {
+    /**
+     * Biztosítások listázó nézet megjelenítése.
+     * 
+     * Lekéri az összes biztosítást a hozzájuk tartozó autókkal együtt,
+     * valamint az összes autót a rendszerben.
+     * 
+     * @return \Inertia\Response Inertia válasz a InsuranceTracker nézettel és adatokkal
+     */
     public function index() {
         $insuranceDatas = Insurance::with('car')->get();
         $carDatas = Car::all();
@@ -18,6 +32,15 @@ class InsuranceController extends Controller
         ]);
     }
 
+    /**
+     * Új biztosítási bejegyzés létrehozása.
+     * 
+     * Validálja a bejövő adatokat és elmenti az új biztosítást az adatbázisba.
+     * Sikeres mentés esetén visszairányít üzenettel, hiba esetén hibaüzenetet jelenít meg.
+     * 
+     * @param  \Illuminate\Http\Request  $request A bejövő HTTP kérés objektum
+     * @return \Illuminate\Http\RedirectResponse Visszairányítás üzenettel
+     */
     public function store(Request $request) {
         $request->validate([
             'car_id'            => 'required',
@@ -37,12 +60,34 @@ class InsuranceController extends Controller
         }
     }
 
+    /**
+     * Biztosítási bejegyzés törlése.
+     * 
+     * Megkeresi a megadott azonosítójú biztosítást és törli az adatbázisból.
+     * Ha a biztosítás nem található, ModelNotFoundException kivételt dob.
+     * 
+     * @param  int  $id A törlendő biztosítás azonosítója
+     * @return \Illuminate\Http\RedirectResponse Visszairányítás sikerüzenettel
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Ha a biztosítás nem található
+     */
     public function destroy($id) {
         $selectedToDestroy = Insurance::findOrFail($id);
         $selectedToDestroy->delete();
         return redirect()->back()->with('message', 'Sikeres törlés!');
     }
 
+    /**
+     * Meglévő biztosítási bejegyzés frissítése.
+     * 
+     * Validálja a bejövő adatokat, megkeresi a megadott azonosítójú biztosítást
+     * és frissíti az adatait. Sikeres frissítés esetén visszairányít üzenettel,
+     * hiba esetén hibaüzenetet jelenít meg.
+     * 
+     * @param  \Illuminate\Http\Request  $request A bejövő HTTP kérés objektum
+     * @param  int  $id A frissítendő biztosítás azonosítója
+     * @return \Illuminate\Http\RedirectResponse Visszairányítás üzenettel
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Ha a biztosítás nem található
+     */
     public function update(Request $request, $id) {
         $request->validate([
             'car_id'            => 'required',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\CarController;
+use App\Http\Controllers\EditUserController;
 use App\Http\Controllers\FuelController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\ServiceController;
@@ -15,11 +16,20 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    //felhasználó hozzáadása admin jogosultággal rendelkezőknek
-    Route::get('/user/add', [AdminUserController::class, 'index'])
-        ->name('add.user')
-        ->middleware('checkRole');
-        
+    //admin jogosultság ellenőrzése
+    Route::middleware(['checkRole'])->group(function () {
+        //felhasználó kezelése
+        Route::get('/users', [EditUserController::class, 'index'])->name('users.list');
+        Route::put('/user/update/{id}', [EditUserController::class, 'update'])->name('user.edit');
+        Route::put('/update/passwd/{id}', [EditUserController::class, 'updatePasswd'])->name('update.passwd');
+        Route::delete('/user/delete/{id}', [EditUserController::class, 'destroy'])->name('destroy.user');
+
+        //felhasználó hozzáadása
+        Route::get('/user/add', function () {
+            return inertia('Admin/Create');
+        })->name('add.user');
+    });
+
     Route::post('/register', [AdminUserController::class, 'create'])->name('register');
 
     //főoldal (statisztikai oldal) route-ok

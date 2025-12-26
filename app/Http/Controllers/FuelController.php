@@ -55,8 +55,8 @@ class FuelController extends Controller
                 Fuel::create($validated);
             });
             return redirect()->back()->with('message', 'Sikeres adatfeltöltés!');
-        } catch (\Throwable $e) {
-            return redirect()->back()->with('message', 'Hiba az adatok feltöltése közben.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('message', 'Hiba az adatok feltöltése közben.' . $e->getMessage());
         }
     }
     
@@ -96,9 +96,7 @@ class FuelController extends Controller
             'consumption'   => 'required|numeric',
             'money'         => 'required|numeric|min:0',
         ]);
-
         
-
         try {
             DB::transaction(function() use($request, $id, $validated) {
                 $car = Car::findOrFail($request->car_id);
@@ -113,8 +111,8 @@ class FuelController extends Controller
             });
             
             return redirect()->back()->with('message', 'Sikeres adatmódosítás!');
-        } catch (\Throwable $e) {
-            return redirect()->back()->with('message', 'Hiba módosítás közben.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('message', 'Hiba módosítás közben: ' . $e->getMessage());
         }
     }
 }

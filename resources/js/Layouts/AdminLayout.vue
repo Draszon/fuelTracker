@@ -53,6 +53,9 @@ const logout = () => {
                                 <NavLink :href="route('add.user')" :active="route().current('add.user')">
                                     Új Felhasználó
                                 </NavLink>
+                                <NavLink :href="route('users.list')" :active="route().current('users.list')">
+                                    Felhasználók kezelése
+                                </NavLink>
                                 <NavLink :href="route('get.statistics')" :active="route().current('get.statistics')">
                                     Car Tracker
                                 </NavLink>
@@ -202,6 +205,10 @@ const logout = () => {
 
                         <ResponsiveNavLink :href="route('add.user')" :active="route().current('add.user')">
                             Új felhasználó
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink :href="route('users.list')" :active="route().current('users.list')">
+                            Felhasználók kezelése
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink :href="route('get.statistics')" :active="route().current('get.statistics')">
