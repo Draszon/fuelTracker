@@ -3,20 +3,26 @@ import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { Head, useForm, router, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
 
+// Autók listája a backend-től
 const props = defineProps({
   carDatas: Array
 });
 
+// Flash üzenetek kezelése
 const page = usePage();
 const flashMessage = computed(() => page.props.flash?.message);
 const message = ref(flashMessage.value);
+
+// UI állapotok (szerkesztés / új autó hozzáadása)
 let editActive = ref(false);
 let addNewCar = ref(false);
+
 const btnTitle = {
   'store': 'Feltöltés',
   'update': 'Frissítés'
 }
 
+// Form adatok
 let form  = useForm({
   name: '',
   licence_plate: '',
@@ -34,6 +40,7 @@ let form  = useForm({
   inspection_valid_from: '',
 });
 
+// Új autó mentése az adatbázisba
 const store = () => {
   form.post('/car-store', {
     preserveScroll: true,
@@ -44,12 +51,14 @@ const store = () => {
   });
 }
 
+// Autó törlése
 const deleteCar = (selected) => {
   router.delete(`/car-delete/${selected}`, {
     preserveScroll: true
   });
 }
 
+// Kiválasztott autó adatainak betöltése a formba szerkesztéshez
 const loadSelectedCar = (selected) => {
   editActive.value = true;
   form.reset();
@@ -70,6 +79,7 @@ const loadSelectedCar = (selected) => {
   form.inspection_valid_from = selected.inspection_valid_from
 }
 
+// Autó adatok frissítése
 const updateCar = (id) => {
   form.put(`/car-update/${id}`, {
     preserveScroll: true,
@@ -90,6 +100,7 @@ const updateCar = (id) => {
 
 <PublicLayout>
 
+<!-- Új autó hozzáadása / szerkesztés form -->
 <section class="my-10" v-show="addNewCar || editActive">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
@@ -99,6 +110,7 @@ const updateCar = (id) => {
         {{ message }}
       </p>
 
+      <!-- Form: új mentés vagy meglévő frissítése -->
       <form @submit.prevent="editActive ? updateCar(form.id) : store()">
       
         <div class="flex flex-col mb-5">
@@ -234,6 +246,7 @@ const updateCar = (id) => {
   </div>
 </section>
 
+<!-- Autók listája -->
 <section class="my-10">
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
@@ -244,6 +257,7 @@ const updateCar = (id) => {
           rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Gépjármű hozzáadása</button>
       </div>
 
+      <!-- Autók megjelenítése kártyákban -->
       <div class="flex flex-col flex-wrap sm:flex-row gap-5">
         <div v-for="carData in carDatas"
           class="flex flex-col w-[285px] gap-5 shadow-lg rounded-md p-7">
