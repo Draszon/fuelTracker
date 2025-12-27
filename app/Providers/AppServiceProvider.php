@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
         /*Gate::define('register-user', function (User $user) {
             return $user->is_admin;
         });*/
-
+!
         Inertia::share([
             'flash' => function () {
                 return [
