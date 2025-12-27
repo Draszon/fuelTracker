@@ -5,7 +5,8 @@ import { ref, onMounted, computed } from 'vue';
 
 // Autók listája a backend-től
 const props = defineProps({
-  carDatas: Array
+  carDatas: Array,
+  userId: Number,
 });
 
 // Flash üzenetek kezelése
@@ -25,6 +26,7 @@ const btnTitle = {
 // Form adatok
 let form  = useForm({
   name: '',
+  user_id: '',
   licence_plate: '',
   car_type: '',
   average_fuel_consumption: '',
@@ -42,6 +44,7 @@ let form  = useForm({
 
 // Új autó mentése az adatbázisba
 const store = () => {
+  form.user_id = props.userId;
   form.post('/car-store', {
     preserveScroll: true,
     onSuccess: () => {
@@ -263,6 +266,11 @@ const updateCar = (id) => {
           class="flex flex-col w-[285px] gap-5 shadow-lg rounded-md p-7">
           <h2 class="font-bold text-xl">{{ carData.name }}</h2>
           <div>
+            <div class="py-3 border-b border-gray-300">
+              <p class="font-medium">Tulajdonos:</p>
+              <p>{{ carData.user.name }}</p>
+            </div>
+
             <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Típusa:</p>
               <p>{{ carData.car_type }}</p>

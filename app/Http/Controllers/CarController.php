@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class CarController extends Controller
 {
@@ -15,10 +16,11 @@ class CarController extends Controller
      * - Átküldi az adatokat az inertia nézetnek
      */
     public function index() {
-        $carDatas = Car::all();
+        $carDatas = Car::with('user')->get();
         
         return Inertia::render('CarTracker', [
-            'carDatas' => $carDatas,
+            'carDatas'  => $carDatas,
+            'userId'    => Auth::id(),
         ]);
     }
 
@@ -30,6 +32,7 @@ class CarController extends Controller
      */
     public function store(Request $request) {
         $request->validate([
+            'user_id'                   => 'required|numeric',
             'name'                      => 'required|string',
             'licence_plate'             => 'required|string',
             'car_type'                  => 'required|string',
