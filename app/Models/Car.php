@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Car extends Model
 {
     protected $fillable = [
+        'user_id',
         'name',
         'licence_plate',
         'car_type',
@@ -23,6 +25,10 @@ class Car extends Model
         'last_oil_change_date',
         'last_break_oil_change_date',
     ];
+
+    public function user(): BelongsTo {
+        return $this->belongsTo(User::class);
+    }
 
     public function fuels(): HasMany {
         return $this->hasMany(Fuel::class);
