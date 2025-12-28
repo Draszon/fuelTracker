@@ -6,6 +6,7 @@ use App\Models\Car;
 use App\Models\Insurance;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Biztosítások kezelését végző controller.
@@ -24,8 +25,20 @@ class InsuranceController extends Controller
      * @return \Inertia\Response Inertia válasz a InsuranceTracker nézettel és adatokkal
      */
     public function index() {
+        $insuranceDatas = Insurance::with(['car', 'car.user'])
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->whereHas('car', fn ($car) => $car->where('user_id', Auth::id()));
+            })->get();
+            
+        $carDatas = Car::with('user')
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->where('user_id', Auth::id());
+            })->get();
+
+        /*
         $insuranceDatas = Insurance::with('car')->get();
-        $carDatas = Car::all();
+        $carDatas = Car::all();*/
+
         return Inertia::render('InsuranceTracker', [
             'insuranceDatas'    => $insuranceDatas,
             'carDatas'          => $carDatas,

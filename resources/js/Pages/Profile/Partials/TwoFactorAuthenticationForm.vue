@@ -107,29 +107,29 @@ const disableTwoFactorAuthentication = () => {
 <template>
     <ActionSection>
         <template #title>
-            Two Factor Authentication
+            Kétlépcsős hitelesítés
         </template>
 
         <template #description>
-            Add additional security to your account using two factor authentication.
+            Adjon extra biztonságot fiókjához kétlépcsős hitelesítéssel.
         </template>
 
         <template #content>
             <h3 v-if="twoFactorEnabled && ! confirming" class="text-lg font-medium text-gray-900">
-                You have enabled two factor authentication.
+                A kétlépcsős hitelesítés engedélyezve van.
             </h3>
 
             <h3 v-else-if="twoFactorEnabled && confirming" class="text-lg font-medium text-gray-900">
-                Finish enabling two factor authentication.
+                Fejezze be a kétlépcsős hitelesítés engedélyezését.
             </h3>
 
             <h3 v-else class="text-lg font-medium text-gray-900">
-                You have not enabled two factor authentication.
+                A kétlépcsős hitelesítés nincs engedélyezve.
             </h3>
 
             <div class="mt-3 max-w-xl text-sm text-gray-600">
                 <p>
-                    When two factor authentication is enabled, you will be prompted for a secure, random token during authentication. You may retrieve this token from your phone's Google Authenticator application.
+                    Ha a kétlépcsős hitelesítés engedélyezve van, bejelentkezéskor egy biztonságos, véletlenszerű tokent kell megadnia. Ezt a tokent a telefonján lévő Google Authenticator alkalmazásból kérheti le.
                 </p>
             </div>
 
@@ -137,11 +137,11 @@ const disableTwoFactorAuthentication = () => {
                 <div v-if="qrCode">
                     <div class="mt-4 max-w-xl text-sm text-gray-600">
                         <p v-if="confirming" class="font-semibold">
-                            To finish enabling two factor authentication, scan the following QR code using your phone's authenticator application or enter the setup key and provide the generated OTP code.
+                            A kétlépcsős hitelesítés engedélyezésének befejezéséhez olvassa be az alábbi QR-kódot a telefonja hitelesítő alkalmazásával, vagy írja be a beállítási kulcsot és adja meg a generált egyszer használatos kódot.
                         </p>
 
                         <p v-else>
-                            Two factor authentication is now enabled. Scan the following QR code using your phone's authenticator application or enter the setup key.
+                            A kétlépcsős hitelesítés most már engedélyezve van. Olvassa be az alábbi QR-kódot a telefonja hitelesítő alkalmazásával, vagy írja be a beállítási kulcsot.
                         </p>
                     </div>
 
@@ -149,7 +149,7 @@ const disableTwoFactorAuthentication = () => {
 
                     <div v-if="setupKey" class="mt-4 max-w-xl text-sm text-gray-600">
                         <p class="font-semibold">
-                            Setup Key: <span v-html="setupKey"></span>
+                            Beállítási kulcs: <span v-html="setupKey"></span>
                         </p>
                     </div>
 
@@ -175,7 +175,7 @@ const disableTwoFactorAuthentication = () => {
                 <div v-if="recoveryCodes.length > 0 && ! confirming">
                     <div class="mt-4 max-w-xl text-sm text-gray-600">
                         <p class="font-semibold">
-                            Store these recovery codes in a secure password manager. They can be used to recover access to your account if your two factor authentication device is lost.
+                            Tárolja ezeket a helyreállítási kódokat egy biztonságos jelszókezelőben. Ha elveszíti a kétlépcsős hitelesítéshez használt eszközt, ezekkel visszaszerezheti a fiókhoz való hozzáférést.
                         </p>
                     </div>
 
@@ -191,7 +191,7 @@ const disableTwoFactorAuthentication = () => {
                 <div v-if="! twoFactorEnabled">
                     <ConfirmsPassword @confirmed="enableTwoFactorAuthentication">
                         <PrimaryButton type="button" :class="{ 'opacity-25': enabling }" :disabled="enabling">
-                            Enable
+                            Engedélyezés
                         </PrimaryButton>
                     </ConfirmsPassword>
                 </div>
@@ -205,7 +205,7 @@ const disableTwoFactorAuthentication = () => {
                             :class="{ 'opacity-25': enabling || confirmationForm.processing }"
                             :disabled="enabling || confirmationForm.processing"
                         >
-                            Confirm
+                            Megerősítés
                         </PrimaryButton>
                     </ConfirmsPassword>
 
@@ -214,7 +214,7 @@ const disableTwoFactorAuthentication = () => {
                             v-if="recoveryCodes.length > 0 && ! confirming"
                             class="me-3"
                         >
-                            Regenerate Recovery Codes
+                            Helyreállítási kódok újragenerálása
                         </SecondaryButton>
                     </ConfirmsPassword>
 
@@ -223,7 +223,7 @@ const disableTwoFactorAuthentication = () => {
                             v-if="recoveryCodes.length === 0 && ! confirming"
                             class="me-3"
                         >
-                            Show Recovery Codes
+                            Helyreállítási kódok megjelenítése
                         </SecondaryButton>
                     </ConfirmsPassword>
 
@@ -233,7 +233,7 @@ const disableTwoFactorAuthentication = () => {
                             :class="{ 'opacity-25': disabling }"
                             :disabled="disabling"
                         >
-                            Cancel
+                            Mégse
                         </SecondaryButton>
                     </ConfirmsPassword>
 
@@ -243,7 +243,7 @@ const disableTwoFactorAuthentication = () => {
                             :class="{ 'opacity-25': disabling }"
                             :disabled="disabling"
                         >
-                            Disable
+                            Letiltás
                         </DangerButton>
                     </ConfirmsPassword>
                 </div>

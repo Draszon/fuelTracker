@@ -12,12 +12,18 @@ class CarController extends Controller
     /**
      * Kocsik nyilvántartó oldal megjelenítése.
      * 
-     * - Lekéri az össze kocsi adatát
-     * - Átküldi az adatokat az inertia nézetnek
+     * - Lekéri az összes kocsit tulajdonossal együtt
+     * - Nem admin esetén csak a saját autók jelennek meg
+     * - Átküldi az adatokat az Inertia nézetnek
      */
     public function index() {
-        $carDatas = Car::with('user')->get();
-        
+        $carDatas = Car::with('user')
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->orderBy('user_id', 'desc')
+            ->get();
+
         return Inertia::render('CarTracker', [
             'carDatas'  => $carDatas,
             'userId'    => Auth::id(),
@@ -25,14 +31,13 @@ class CarController extends Controller
     }
 
     /**
-     * Kocsi adatainak tárolásáért felel
+     * Kocsi adatainak tárolásáért felel.
      * 
-     * A kocsi összes adata itt kerül feltöltésre az adatbázisba.
-     * 
+     * - Minden mezőt validál
+     * - Az új autót automatikusan az aktuális felhasználóhoz rendeli
      */
     public function store(Request $request) {
-        $request->validate([
-            'user_id'                   => 'required|numeric',
+        $validated = $request->validate([
             'name'                      => 'required|string',
             'licence_plate'             => 'required|string',
             'car_type'                  => 'required|string',
@@ -49,8 +54,10 @@ class CarController extends Controller
             'inspection_valid_from'     => 'required|date',
         ]);
 
+        $validated['user_id'] = Auth::id();
+
         try {
-            Car::create($request->all());
+            Car::create($validated);
             return redirect()->back()->with('message', 'Sikeres mentés');
         } catch (\Exception $e) {
             return redirect()->back()->with('message', 'Hiba a feltöltés közben: ' . $e->getMessage());
@@ -58,21 +65,27 @@ class CarController extends Controller
     }
     
     /**
-     * Kocsik törléséért felel az adatbázisból
+     * Kocsik törléséért felel az adatbázisból.
      * 
-     * A kiválasztott kocsi id alapján való törlését végzi.
+     * - Csak a tulajdonos vagy admin törölhet
+     * - Id alapján keresi meg a kocsit és eltávolítja
      */
     public function destroy($id) {
         $selected = Car::findOrFail($id);
+
+        if ($selected->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            abort(403, 'Nem vagy jogosult erre a műveletre!');
+        }
+
         $selected->delete();
         return redirect()->back()->with('message', 'Sikeres adattörlés!');
     }
 
     /**
-     * A kocsik adatainak frissítéséért felel
+     * A kocsik adatainak frissítéséért felel.
      * 
-     * Minden tulajdonság frissíthető
-     * 
+     * - Csak a tulajdonos vagy admin módosíthat
+     * - Minden mezőt validál, majd frissít
      */
     public function update(Request $request, $id) {
         $validated = $request->validate([
@@ -94,6 +107,11 @@ class CarController extends Controller
 
         try {
             $selectedCar = Car::findOrFail($id);
+
+            if ($selectedCar->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult erre a műveletre!');
+            }
+
             $selectedCar->update($validated);
             return redirect()->back()->with('message', 'Sikeres módosítás!');
         } catch (\Exception $e) {

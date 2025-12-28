@@ -6,6 +6,7 @@ use App\Models\Car;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Szervizek kezelését végző controller.
@@ -24,8 +25,22 @@ class ServiceController extends Controller
      * @return \Inertia\Response Inertia válasz a ServiceTracker nézettel és adatokkal
      */
     public function index() {
+        $serviceDatas = Service::with(['car', 'car.user'])
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->whereHas('car', fn($car) => $car->where('user_id', Auth::id()));
+            })
+            ->orderBy('date', 'desc')
+            ->get();
+
+        $carDatas = Car::with('user')
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->where('user_id', Auth::id());
+            })->get();
+
+        /*
         $serviceDatas = Service::with('car')->orderBy('date', 'desc')->get();
         $carDatas = Car::all();
+        */
         return Inertia::render('ServiceTracker', [
             'carDatas'      => $carDatas,
             'serviceDatas'  => $serviceDatas,
@@ -35,8 +50,8 @@ class ServiceController extends Controller
     /**
      * Új szerviz bejegyzés létrehozása.
      * 
-     * Validálja a bejövő adatokat és elmenti az új szervizelést az adatbázisba.
-     * Sikeres mentés esetén visszairányít üzenettel, hiba esetén hibaüzenetet jelenít meg.
+        * Validálja a bejövő adatokat, ellenőrzi a jogosultságot (tulajdonos vagy admin),
+        * majd elmenti az új szervizelést. Siker esetén visszairányít üzenettel.
      * 
      * @param  \Illuminate\Http\Request  $request A bejövő HTTP kérés objektum
      * @return \Illuminate\Http\RedirectResponse Visszairányítás üzenettel
@@ -51,6 +66,12 @@ class ServiceController extends Controller
         ]);
 
         try {
+            $car = Car::findOrFail($request->car_id);
+
+            if ($car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult erre a műveletre!');
+            }
+
             Service::create($validated);
             return redirect()->back()->with('message', 'Sikeres adatfeltöltés!');
         } catch (\Exception $e) {
@@ -61,15 +82,21 @@ class ServiceController extends Controller
     /**
      * Szerviz bejegyzés törlése.
      * 
-     * Megkeresi a megadott azonosítójú szervizelést és törli az adatbázisból.
-     * Ha a szerviz nem található, ModelNotFoundException kivételt dob.
+        * Betölti a szerviz rekordot autóval együtt, ellenőrzi, hogy a tulajdonos vagy admin töröl-e,
+        * majd törli a rekordot. Ha a szerviz nem található, ModelNotFoundException kivételt dob.
      * 
      * @param  int  $id A törlendő szerviz azonosítója
      * @return \Illuminate\Http\RedirectResponse Visszairányítás sikerüzenettel
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Ha a szerviz nem található
      */
     public function destroy($id) {
-        $selectedServiceData = Service::findOrFail($id);
+        $selectedServiceData = Service::with('car')->findOrFail($id);
+
+        //$car = Car::findOrFail($selectedServiceData->car_id);
+        if ($selectedServiceData->car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            abort(403, 'Nem vagy jogosult erre a műveletre!');
+        }
+
         $selectedServiceData->delete();
         return redirect()->back()->with('message', 'Sikeres törlés!');
     }
@@ -77,9 +104,9 @@ class ServiceController extends Controller
     /**
      * Meglévő szerviz bejegyzés frissítése.
      * 
-     * Validálja a bejövő adatokat, megkeresi a megadott azonosítójú szervizelést
-     * és frissíti az adatait. Sikeres frissítés esetén visszairányít üzenettel,
-     * hiba esetén hibaüzenetet jelenít meg.
+        * Validálja a bejövő adatokat, betölti a szerviz rekordot autóval együtt,
+        * ellenőrzi a jogosultságot (tulajdonos vagy admin), majd frissíti az adatokat.
+        * Sikeres frissítés esetén visszairányít üzenettel, hiba esetén hibaüzenetet jelenít meg.
      * 
      * @param  \Illuminate\Http\Request  $request A bejövő HTTP kérés objektum
      * @param  int  $id A frissítendő szerviz azonosítója
@@ -96,7 +123,12 @@ class ServiceController extends Controller
         ]);
 
         try {
-            $serviceData = Service::findOrFail($id);
+            $serviceData = Service::with('car')->findOrFail($id);
+
+            if($serviceData->car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult erre a műveletre!');
+            }
+
             $serviceData->update($request->all());
             return redirect()->back()->with('message', 'Sikeres Adatmódosítás!');
         } catch (\Exception $e) {

@@ -26,7 +26,6 @@ const btnTitle = {
 // Form adatok
 let form  = useForm({
   name: '',
-  user_id: '',
   licence_plate: '',
   car_type: '',
   average_fuel_consumption: '',
@@ -44,7 +43,6 @@ let form  = useForm({
 
 // Új autó mentése az adatbázisba
 const store = () => {
-  form.user_id = props.userId;
   form.post('/car-store', {
     preserveScroll: true,
     onSuccess: () => {
