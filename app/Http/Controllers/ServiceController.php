@@ -66,7 +66,7 @@ class ServiceController extends Controller
         ]);
 
         try {
-            $car = Car::findOrFail($request->car_id);
+            $car = Car::findOrFail($validated['car_id']);
 
             if ($car->user_id !== Auth::id() && !Auth::user()->is_admin) {
                 abort(403, 'Nem vagy jogosult erre a műveletre!');
@@ -114,7 +114,7 @@ class ServiceController extends Controller
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Ha a szerviz nem található
      */
     public function update(Request $request, $id) {
-        $request->validate([
+        $validated =  $request->validate([
             'car_id'        => 'required',
             'date'          => 'required|date',
             'current_km'    => 'required|numeric',
@@ -129,7 +129,7 @@ class ServiceController extends Controller
                 abort(403, 'Nem vagy jogosult erre a műveletre!');
             }
 
-            $serviceData->update($request->all());
+            $serviceData->update($validated);
             return redirect()->back()->with('message', 'Sikeres Adatmódosítás!');
         } catch (\Exception $e) {
             return redirect()->back()->with('message', 'Hiba adatmódosítás közben: ' . $e->getMessage());

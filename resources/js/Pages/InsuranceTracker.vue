@@ -101,7 +101,7 @@ const filteredInsuranceTracker = computed(() => {
         </div>
 
         <div class="flex flex-col mb-5">
-          <label for="insurance-type">Szolgáltató</label>
+          <label for="insurance-type">Típusa</label>
           <input type="text" placeholder="Kötelező / casco" required id="insurance-type" v-model="form.insturance_type"
             class="rounded-lg border-gray-200 shadow-none max-w-80
             focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
@@ -176,6 +176,7 @@ const filteredInsuranceTracker = computed(() => {
             <ul class="flex flex-row gap-5 text-center font-medium">
               <li class="flex-none w-32">Kocsi</li>
               <li class="flex-none w-32">Szolgáltató</li>
+              <li class="flex-none w-32">Típusa</li>
               <li class="flex-none w-32">Biztosítás ára</li>
               <li class="flex-none w-32">Érv. kezdete</li>
               <li class="flex-none w-32">Érv. vége</li>
@@ -191,6 +192,7 @@ const filteredInsuranceTracker = computed(() => {
             <ul class="flex flex-row gap-5 text-center font-medium">
               <li class="flex justify-center items-center w-32">{{ insuranceData.car.name }}</li>
               <li class="flex justify-center items-center w-32">{{ insuranceData.provider }}</li>
+              <li class="flex justify-center items-center w-32">{{ insuranceData.insturance_type}}</li>
               <li class="flex justify-center items-center w-32">{{ insuranceData.cost }} Ft</li>
               <li class="flex justify-center items-center w-32">{{ insuranceData.valid_from }}</li>
               <li class="flex justify-center items-center w-32">{{ insuranceData.valid_until }}</li>
