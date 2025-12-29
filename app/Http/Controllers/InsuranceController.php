@@ -6,6 +6,7 @@ use App\Models\Car;
 use App\Models\Insurance;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Biztosítások kezelését végző controller.
@@ -24,8 +25,20 @@ class InsuranceController extends Controller
      * @return \Inertia\Response Inertia válasz a InsuranceTracker nézettel és adatokkal
      */
     public function index() {
+        $insuranceDatas = Insurance::with(['car', 'car.user'])
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->whereHas('car', fn ($car) => $car->where('user_id', Auth::id()));
+            })->get();
+            
+        $carDatas = Car::with('user')
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->where('user_id', Auth::id());
+            })->get();
+
+        /*
         $insuranceDatas = Insurance::with('car')->get();
-        $carDatas = Car::all();
+        $carDatas = Car::all();*/
+
         return Inertia::render('InsuranceTracker', [
             'insuranceDatas'    => $insuranceDatas,
             'carDatas'          => $carDatas,
@@ -42,7 +55,7 @@ class InsuranceController extends Controller
      * @return \Illuminate\Http\RedirectResponse Visszairányítás üzenettel
      */
     public function store(Request $request) {
-        $request->validate([
+        $validated = $request->validate([
             'car_id'            => 'required',
             'insturance_type'   => 'required|string',
             'provider'          => 'required|string',
@@ -53,7 +66,12 @@ class InsuranceController extends Controller
         ]);
 
         try {
-            Insurance::create($request->all());
+            $car = Car::findOrFail($validated['car_id']);
+            if ($car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult ehhez a művelethez!');
+            }
+
+            Insurance::create($validated);
             return redirect()->back()->with('message', 'Sikeres adatfeltöltés!');
         } catch (\Exception $e) {
             return redirect()->back()->with('message', 'Hiba történt az adatok feltöltése közben: ' . $e->getMessage());
@@ -71,7 +89,12 @@ class InsuranceController extends Controller
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Ha a biztosítás nem található
      */
     public function destroy($id) {
-        $selectedToDestroy = Insurance::findOrFail($id);
+        $selectedToDestroy = Insurance::with('car')->findOrFail($id);
+
+        if ($selectedToDestroy->car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+            abort(403, 'Nem vagy jogosult ehhez a művelethez!');
+        }
+
         $selectedToDestroy->delete();
         return redirect()->back()->with('message', 'Sikeres törlés!');
     }
@@ -89,7 +112,7 @@ class InsuranceController extends Controller
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Ha a biztosítás nem található
      */
     public function update(Request $request, $id) {
-        $request->validate([
+        $validated = $request->validate([
             'car_id'            => 'required',
             'insturance_type'   => 'required|string',
             'provider'          => 'required|string',
@@ -100,8 +123,17 @@ class InsuranceController extends Controller
         ]);
 
         try {
-            $selectedData = Insurance::findOrFail($id);
-            $selectedData->update($request->all());
+            $selectedData = Insurance::with('car')->findOrFail($id);
+            if ($selectedData->car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult ehhez a művelethez!');
+            }
+
+            $targetCar = Car::findOrFail($validated['car_id']);
+            if ($targetCar->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult ehhez a művelethez!');
+            }
+
+            $selectedData->update($validated);
             return redirect()->back()->with('message', 'Sikeres adatmódosítás!');
         } catch (\Exception $e) {
             return redirect()->back()->with('message', 'Hiba az adatok frissítése közben: ' . $e->getMessage());

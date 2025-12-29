@@ -7,20 +7,31 @@ use App\Models\Fuel;
 use DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class FuelController extends Controller
 {
     /**
      * Üzemanyag nyilvántartó alapoldal megjelenítése.
      *
-     * - Lekéri az összes tankolási adatot dátum szerint csökkenő sorrendben
-     * - Betölti a kapcsolódó autó adatokat
+     * - Lekéri a tankolásokat dátum szerint csökkenő sorrendben
+     * - Betölti a kapcsolódó autót és annak tulajdonosát
+     * - Nem admin esetén csak a saját autók tankolásai kerülnek be
      * - Átküldi az adatokat az Inertia nézetnek
      */
     public function index() {
-        $fuelDatas = Fuel::with('car')->orderBy('date', 'desc')->get();
-        $carDatas = Car::all();
-        
+        $fuelDatas = Fuel::with(['car', 'car.user'])
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->whereHas('car', fn($car) => $car->where('user_id', Auth::id()));
+            })
+            ->orderBy('date', 'desc')
+            ->get();
+
+        $carDatas = Car::with('user')
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->where('user_id', Auth::id());
+            })->get();
+            
         return Inertia::render('FuelTracker', [
             'fuelDatas' => $fuelDatas,
             'carDatas' => $carDatas,
@@ -30,11 +41,10 @@ class FuelController extends Controller
     /**
      * Új üzemanyag bejegyzés létrehozása.
      *
-     * A mentés hatással van az adott autó aktuális kilométeróra állására,
-     * ezért a tankolt km érték hozzáadásra kerül az autóhoz.
+     * - Ellenőrzi, hogy az autó a felhasználóé vagy az admin rögzít
+     * - Tranzakcióban növeli az autó km-állását és létrehozza a tankolást
      */
     public function store(Request $request) {
-        
         $validated = $request->validate([
             'car_id'        => 'required',
             'date'          => 'required|date',
@@ -49,7 +59,11 @@ class FuelController extends Controller
             DB::transaction(function() use($validated, $request) {
                 $car = Car::findOrFail($request->car_id);
 
-                //A tankolás növeli az autó aktuális km óra állását.
+                if ($car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                    abort(403, 'Nem vagy jogosult erre a műveletre!');
+                }
+
+                // A tankolás növeli az autó aktuális km óra állását.
                 $car->current_km += $request->km;
                 $car->save();
                 Fuel::create($validated);
@@ -63,18 +77,22 @@ class FuelController extends Controller
     /**
      * Üzemanyag bejegyzés törlése.
      *
-     * A törlés visszavonja az adott tankolás által növelt
-     * kilométeróra állást, mivel az adat megszűnik.
+     * - Csak a tulajdonos vagy admin törölhet
+     * - Tranzakcióban visszavonja a tankolás km-hatását, majd töröl
      */
     public function destroy(Request $request, $id) {
         DB::transaction(function() use($request, $id) {
             $car = Car::findOrFail($request->car_id);
+            $selectedToDelete = Fuel::findOrFail($id);
 
-            //A törölt tankolás km érték levonjuk az aktuális állásból
+            if ($selectedToDelete->car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult erre a műveletre!');
+            }
+
+            // A törölt tankolás km értékét levonjuk az aktuális állásból.
             $car->current_km -= $request->km;
             $car->save();
-
-            $selectedToDelete = Fuel::findOrFail($id);
+            
             $selectedToDelete->delete();
         });
         return redirect()->back()->with('message', 'Sikeres adattörlés!');
@@ -83,8 +101,8 @@ class FuelController extends Controller
     /**
      * Üzemanyag bejegyzés frissítése.
      *
-     * Mivel a km érték módosulhat, csak a régi és az új km
-     * különbsége kerül elszámolásra az autó aktuális állásában.
+     * - Csak a tulajdonos vagy admin módosíthat
+     * - A km különbséget számolja el, hogy a km-óra állás pontos maradjon
      */
     public function update(Request $request, $id) {        
         $validated = $request->validate([
@@ -102,7 +120,11 @@ class FuelController extends Controller
                 $car = Car::findOrFail($request->car_id);
                 $fuelData = Fuel::findOrFail($id);
 
-                //Csak a különbséget számoljuk el, hogy ne duplázzuk a km óra állást.
+                if ($fuelData->car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                    abort(403, 'Nem vagy jogosult erre a műveletre!');
+                }
+
+                // Csak a különbséget számoljuk el, hogy ne duplázzuk a km óra állást.
                 $delta = $validated["km"] - $fuelData->km;
                 $car->current_km += $delta;
                 $car->save();

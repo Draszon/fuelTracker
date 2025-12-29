@@ -32,14 +32,26 @@ class StatisticsController extends Controller
     public function index() {
         // Aktuális dátum lekérése
         $now = Carbon::now();
+        $userId = auth()->id();
+
+        //Csak a user autói
+        $carIds = Car::where('user_id', $userId)->pluck('id');
+
+        //Alap lekérdezések user-re szűrve
+        //whereIn -> egy adott mező értékeit összehasonlítjuk egy adott tömb (array) elemeivel
+        $fuelMonthQuery = Fuel::whereIn('car_id', $carIds)->month($now);
+        $fuelYearQuery = Fuel::whereIn('car_id', $carIds)->year($now);
+        $serviceMonthQuery = Service::whereIn('car_id', $carIds)->month($now);
+        $serviceYearQuery = Service::whereIn('car_id', $carIds)->year($now);
+
 
         // Havi összesítések számításához (átlagfogyasztás kalkulációhoz)
-        $sumMonthKm = Fuel::month($now)->sum('km');
-        $sumMonthFuel = Fuel::month($now)->sum('quantity');
+        $sumMonthKm = $fuelMonthQuery->sum('km');
+        $sumMonthFuel = $fuelMonthQuery->sum('quantity');
 
         // Éves összesítések számításához
-        $sumYearKm = Fuel::year($now)->sum('km');
-        $sumYearFuel = Fuel::year($now)->sum('quantity');
+        $sumYearKm = $fuelYearQuery->sum('km');
+        $sumYearFuel = $fuelYearQuery->sum('quantity');
 
         // Karbantartási emlékeztetők alapértelmezett értékei (szűrés nélküli nézetnél nem használt)
         $periodicMaintenances = [
@@ -52,10 +64,10 @@ class StatisticsController extends Controller
 
         // Havi üzemanyag statisztikák összegyűjtése
         $fuelMonth = [
-            'total_liter'       => Fuel::month($now)->sum('quantity'),
-            'total_km'          => Fuel::month($now)->sum('km'),
-            'total_cost'        => Fuel::month($now)->sum('money'),
-            'monthly_fuel_count'=> Fuel::month($now)->count(),
+            'total_liter'       => $fuelMonthQuery->sum('quantity'),
+            'total_km'          => $fuelMonthQuery->sum('km'),
+            'total_cost'        => $fuelMonthQuery->sum('money'),
+            'monthly_fuel_count'=> $fuelMonthQuery->count(),
         ];
 
         // Havi átlagfogyasztás számítása (l/100km), nullázás ha nincs adat
@@ -67,10 +79,10 @@ class StatisticsController extends Controller
 
         // Éves üzemanyag statisztikák összegyűjtése
         $fuelYear = [
-            'total_liter'       => Fuel::year($now)->sum('quantity'),
-            'total_km'          => Fuel::year($now)->sum('km'),
-            'total_cost'        => Fuel::year($now)->sum('money'),
-            'yearly_fuel_count' => Fuel::year($now)->count(),
+            'total_liter'       => $fuelYearQuery->sum('quantity'),
+            'total_km'          => $fuelYearQuery->sum('km'),
+            'total_cost'        => $fuelYearQuery->sum('money'),
+            'yearly_fuel_count' => $fuelYearQuery->count(),
         ];
 
         // Éves átlagfogyasztás számítása (l/100km)
@@ -82,14 +94,14 @@ class StatisticsController extends Controller
 
         // Havi szervizelési statisztikák
         $statisticsMonth = [
-            'total_cost'    => Service::month($now)->sum('cost'),
-            'service_count' => Service::month($now)->count(),
+            'total_cost'    => $serviceMonthQuery->sum('cost'),
+            'service_count' => $serviceMonthQuery->count(),
         ];
 
         // Éves szervizelési statisztikák
         $statisticsYear = [
-            'total_cost'    => Service::year($now)->sum('cost'),
-            'service_count' => Service::year($now)->count(),
+            'total_cost'    => $serviceYearQuery->sum('cost'),
+            'service_count' => $serviceYearQuery->count(),
         ];
 
         // Adatok átadása a frontend számára
@@ -98,7 +110,7 @@ class StatisticsController extends Controller
             'fuelYear'          => $fuelYear,
             'statisticsMonth'   => $statisticsMonth,
             'statisticsYear'    => $statisticsYear,
-            'carDatas'          => Car::all(),
+            'carDatas'          => Car::where('user_id', $userId)->get(),
             'periodicMaintenances'  => $periodicMaintenances,
         ]);
     }
@@ -117,17 +129,23 @@ class StatisticsController extends Controller
     public function filteredStatistic(Request $request) {
         // Aktuális dátum lekérése
         $now = Carbon::now();
+        $userId = auth()->id();
 
-        // Kiválasztott autó adatainak betöltése
-        $carDatas = Car::find($request->car_id);
+        $carDatas = Car::where('user_id', $userId)
+            ->findOrFail($request->car_id);
+
+        $fuelMonthQuery = Fuel::where('car_id', $carDatas->id)->month($now);
+        $fuelYearQuery = Fuel::where('car_id', $carDatas->id)->year($now);
+        $serviceMonthQuery = Service::where('car_id', $carDatas->id)->month($now);
+        $serviceYearQuery = Service::where('car_id', $carDatas->id)->year($now);
 
         // Havi összesítések számításához (adott autóra szűrve)
-        $sumMonthKm = Fuel::month($now)->where('car_id', $request->car_id)->sum('km');
-        $sumMonthFuel = Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity');
+        $sumMonthKm = $fuelMonthQuery->sum('km');
+        $sumMonthFuel = $fuelMonthQuery->sum('quantity');
 
         // Éves összesítések számításához (adott autóra szűrve)
-        $sumYearKm = Fuel::year($now)->where('car_id', $request->car_id)->sum('km');
-        $sumYearFuel = Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity');
+        $sumYearKm = $fuelYearQuery->sum('km');
+        $sumYearFuel = $fuelYearQuery->sum('quantity');
 
         // Következő olajcsere km-óra állásának kiszámítása
         $next_oil_change_km = $carDatas->last_oil_change_km + $carDatas->oil_change_cycle_km;
@@ -147,10 +165,10 @@ class StatisticsController extends Controller
 
         // Havi üzemanyag statisztikák összegyűjtése (adott autóra szűrve)
         $fuelMonth = [
-            'total_liter'       => Fuel::month($now)->where('car_id', $request->car_id)->sum('quantity'),
-            'total_km'          => Fuel::month($now)->where('car_id', $request->car_id)->sum('km'),
-            'total_cost'        => Fuel::month($now)->where('car_id', $request->car_id)->sum('money'),
-            'monthly_fuel_count'=> Fuel::month($now)->where('car_id', $request->car_id)->count(),
+            'total_liter'       => $fuelMonthQuery->sum('quantity'),
+            'total_km'          => $fuelMonthQuery->sum('km'),
+            'total_cost'        => $fuelMonthQuery->sum('money'),
+            'monthly_fuel_count'=> $fuelMonthQuery->count(),
         ];
 
         // Havi átlagfogyasztás számítása (l/100km), nullázás ha nincs adat
@@ -162,10 +180,10 @@ class StatisticsController extends Controller
 
         // Éves üzemanyag statisztikák összegyűjtése (adott autóra szűrve)
         $fuelYear = [
-            'total_liter'       => Fuel::year($now)->where('car_id', $request->car_id)->sum('quantity'),
-            'total_km'          => Fuel::year($now)->where('car_id', $request->car_id)->sum('km'),
-            'total_cost'        => Fuel::year($now)->where('car_id', $request->car_id)->sum('money'),
-            'yearly_fuel_count' => Fuel::year($now)->where('car_id', $request->car_id)->count(),
+            'total_liter'       => $fuelYearQuery->sum('quantity'),
+            'total_km'          => $fuelYearQuery->sum('km'),
+            'total_cost'        => $fuelYearQuery->sum('money'),
+            'yearly_fuel_count' => $fuelYearQuery->count(),
         ];
 
         // Éves átlagfogyasztás számítása (l/100km), nullázás ha nincs adat
@@ -177,14 +195,14 @@ class StatisticsController extends Controller
 
         // Havi szervizelési statisztikák (adott autóra szűrve)
         $statisticsMonth = [
-            'total_cost'    => Service::month($now)->where('car_id', $request->car_id)->sum('cost'),
-            'service_count' => Service::month($now)->where('car_id', $request->car_id)->count(),
+            'total_cost'    => $serviceMonthQuery->sum('cost'),
+            'service_count' => $serviceMonthQuery->count(),
         ];
 
         // Éves szervizelési statisztikák (adott autóra szűrve)
         $statisticsYear = [
-            'total_cost'    => Service::year($now)->where('car_id', $request->car_id)->sum('cost'),
-            'service_count' => Service::year($now)->where('car_id', $request->car_id)->count(),
+            'total_cost'    => $serviceYearQuery->sum('cost'),
+            'service_count' => $serviceYearQuery->count(),
         ];
 
         // Adatok átadása a frontend számára
@@ -193,7 +211,7 @@ class StatisticsController extends Controller
             'fuelYear'              => $fuelYear,
             'statisticsMonth'       => $statisticsMonth,
             'statisticsYear'        => $statisticsYear,
-            'carDatas'              => Car::all(),
+            'carDatas'              => Car::where('user_id', $userId)->get(),
             'periodicMaintenances'  => $periodicMaintenances,
         ]);
     }
