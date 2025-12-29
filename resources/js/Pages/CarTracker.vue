@@ -266,7 +266,7 @@ const updateCar = (id) => {
           <div>
             <div class="py-3 border-b border-gray-300">
               <p class="font-medium">Tulajdonos:</p>
-              <p>{{ carData.user.name }}</p>
+              <p>{{ carData.user ? carData.user.name : 'Ismeretlen felhasználó' }}</p>
             </div>
 
             <div class="py-3 border-b border-gray-300">
