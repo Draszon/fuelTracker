@@ -131,10 +131,10 @@ class StatisticsController extends Controller
      */
     public function filteredStatistic(Request $request) {
         // Aktuális dátum lekérése
-        $now = Carbon::now();
-        $user = auth()->user();
-        $userId = $user->id;
-        $isAdmin = (bool)($user->is_admin ?? false);
+        $now        = Carbon::now();
+        $user       = auth()->user();
+        $userId     = $user->id;
+        $isAdmin    = (bool)($user->is_admin ?? false);
 
         // Admin minden autót láthat, user csak a sajátjait; itt szűrjük és töltjük be az autót
         $carQuery = Car::query();
