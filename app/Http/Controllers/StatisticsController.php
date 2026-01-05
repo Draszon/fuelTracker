@@ -31,19 +31,20 @@ class StatisticsController extends Controller
      */
     public function index() {
         // Aktuális dátum lekérése
-        $now = Carbon::now();
-        $userId = auth()->id();
+        $now        = Carbon::now();
+        $user       = auth()->user();
+        $userId     = $user->id;
+        $is_admin   = (bool)($user->is_admin ?? false);
 
         //Csak a user autói
-        $carIds = Car::where('user_id', $userId)->pluck('id');
+        $carIds = $is_admin ? Car::pluck('id') : Car::where('user_id', $userId)->pluck('id');
 
         //Alap lekérdezések user-re szűrve
         //whereIn -> egy adott mező értékeit összehasonlítjuk egy adott tömb (array) elemeivel
-        $fuelMonthQuery = Fuel::whereIn('car_id', $carIds)->month($now);
-        $fuelYearQuery = Fuel::whereIn('car_id', $carIds)->year($now);
-        $serviceMonthQuery = Service::whereIn('car_id', $carIds)->month($now);
-        $serviceYearQuery = Service::whereIn('car_id', $carIds)->year($now);
-
+        $fuelMonthQuery     = Fuel::whereIn('car_id', $carIds)->month($now);
+        $fuelYearQuery      = Fuel::whereIn('car_id', $carIds)->year($now);
+        $serviceMonthQuery  = Service::whereIn('car_id', $carIds)->month($now);
+        $serviceYearQuery   = Service::whereIn('car_id', $carIds)->year($now);
 
         // Havi összesítések számításához (átlagfogyasztás kalkulációhoz)
         $sumMonthKm = $fuelMonthQuery->sum('km');
