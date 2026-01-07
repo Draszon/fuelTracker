@@ -84,5 +84,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::delete('/insurance-delete/{id}', [InsuranceController::class, 'destroy'])->name('destroy.insuranceData');
 
     // Útiköltség kalkulátor - még nincs implementálva
-    
+    Route::get('/travel-cost-calculator', function () {
+        return Inertia::render('TravelCostCalculator');
+    });
 });
