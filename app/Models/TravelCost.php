@@ -12,6 +12,7 @@ class TravelCost extends Model
         'direction',
         'distance',
         'travel_expenses',
+        'fuel_costs',
     ];
 
     public function car ():BelongsTo {
