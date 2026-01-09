@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TravelCost extends Model
 {
     protected $fillable = [
+        'car_id',
         'date',
         'direction',
         'distance',

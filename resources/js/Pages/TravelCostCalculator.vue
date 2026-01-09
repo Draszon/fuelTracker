@@ -13,21 +13,55 @@ const page = usePage();
 const flashMessage = computed(() => page.props.flash?.message);
 const message = ref(flashMessage.value);
 const selectedCarId = ref(null);
+let editActive = ref(false);
 
 const dailyTravelForm = useForm({
+  id: null,
   car_id: '',
   date: '',
   direction: '',
   distance: '',
 });
 
+const updateSelectedData = (id) => {
+  dailyTravelForm.put(`/update-travel-data/${id}`, {
+    preserveScroll: true,
+    onSuccess: () => {
+      dailyTravelForm.reset();
+      editActive.value = false;
+    },
+    error: (errors) => {
+      console.log('Hiba az adatok frissítése közben: ', errors);
+    }
+  });
+}
+
+const loadSelectedData = (selected) => {
+  editActive.value = true;
+  dailyTravelForm.reset();
+  dailyTravelForm.id = selected.id,
+  dailyTravelForm.car_id = selected.car_id,
+  dailyTravelForm.date = selected.date,
+  dailyTravelForm.direction = selected.direction,
+  dailyTravelForm.distance = selected.distance
+}
+
 const storeTravelData = () => {
   dailyTravelForm.post('/store-travel-data', {
     preserveScroll: true,
     onSuccess: () => {
       dailyTravelForm.reset();
+    },
+    onError: (errors) => {
+      console.log('Hiba történt az adatok rögzítése közben: ', errors);
     }
   })
+}
+
+const deleteData = (id) => {
+  router.delete(`/delete-travel-data/${id}`, {
+    preserveScroll: true
+  });
 }
 
 const fuelPriceForm = useForm({
@@ -61,7 +95,7 @@ const updateAmortizationPrice = () => {
 //adatok szűrése a kiválasztott kocsira
 const filteredDatas = computed(() => {
   if (!selectedCarId.value) return props.travelDatas;
-  return props.travelDatas.filter(f => f.id === selectedCarId.value);
+  return props.travelDatas.filter(f => f.car_id === selectedCarId.value);
 });
 </script>
 
@@ -117,7 +151,7 @@ const filteredDatas = computed(() => {
 
       <div class="flex flex-wrap">
         <div class="mb-10 sm:mb-0 basis-1/2">
-          <form class="mt-5" @submit.prevent="storeTravelData">
+          <form class="mt-5" @submit.prevent="editActive ? updateSelectedData(dailyTravelForm.id) : storeTravelData()">
 
             <div class="flex flex-col mb-5">
               <label for="car">Kocsi kiválasztása</label>
@@ -126,7 +160,7 @@ const filteredDatas = computed(() => {
                 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
                 focus:shadow-lg transition ease-in-out"
               >
-                <option v-for="carData in carDatas" :key="carDatas.id" :value="carDatas.id">{{ carData.name }}</option>
+                <option v-for="carData in carDatas" :key="carData.id" :value="carData.id">{{ carData.name }}</option>
               </select>
             </div>
 
@@ -157,7 +191,7 @@ const filteredDatas = computed(() => {
               >
             </div>
             <button type="submit" class="transition ease-in-out delay-150 text-white
-              rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Feltöltés</button>
+              rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? 'Frissítés' : 'Feltöltés' }}</button>
           </form>
         </div>
 
@@ -195,19 +229,22 @@ const filteredDatas = computed(() => {
             </form>
           </div>
 
-          <div class="flex gap-2 min-w-80">
-            <p>Havi össz. km =</p>
-            <p class="font-bold">435 km</p>
-          </div>
+          <div class="bg-gray-100 max-w-72 p-7 rounded-md">
+            <h2 class="font-semibold text-xl mb-5">Aktuális hónap adatai</h2>
+            <div class="flex gap-2 min-w-80">
+              <p>Havi össz. km =</p>
+              <p class="font-bold">435 km</p>
+            </div>
 
-          <div class="flex gap-2 min-w-52">
-            <p>x 15 Ft =</p>
-            <p class="font-bold">12650 Ft</p>
-          </div>
+            <div class="flex gap-2 min-w-52">
+              <p>x 15 Ft =</p>
+              <p class="font-bold">12650 Ft</p>
+            </div>
 
-          <div class="flex gap-2 min-w-52">
-            <p>Havi teljes költség =</p>
-            <p class="font-bold">43783 Ft</p>
+            <div class="flex gap-2 min-w-52">
+              <p>Havi teljes költség =</p>
+              <p class="font-bold">13783 Ft</p>
+            </div>
           </div>
         </div>
       </div>
@@ -258,10 +295,10 @@ const filteredDatas = computed(() => {
               <li class="flex justify-center items-center w-32">{{ filteredData.travel_expenses }} Ft</li>
               <li class="flex justify-center items-center w-32">{{ filteredData.fuel_costs }} Ft/l</li>
               <li class="w-32 flex justify-center items-center gap-5">
-                <button
+                <button @click="deleteData(filteredData.id)"
                   class="px-2 h-8 rounded bg-red-500 text-white">Törlés</button>
                 
-                <button
+                <button @click="loadSelectedData(filteredData)"
                   class="py-1 h-8 px-2 rounded bg-gray-500 text-white">Szerk.</button>
               </li>
             </ul>

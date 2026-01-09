@@ -14,17 +14,20 @@ class TravelCostCalculatorController extends Controller
 {
     public function index () {
         $costs = CostRate::all();
-        $travelDatas = TravelCost::with(['car', 'car.user'])
+
+        $baseQuery = TravelCost::with(['car', 'car.user'])
             ->when(!Auth::user()->is_admin, function ($query) {
                 $query->whereHas('car', fn($car) => $car->where('user_id', Auth::id()));
-            })
-            ->orderBy('date', 'desc')
-            ->get();
-            
+            });
+        
+        $travelDatas = (clone $baseQuery)->orderBy('date', 'desc')->get();
+
         $carDatas = Car::with('user')
             ->when(!Auth::user()->is_admin, function ($query) {
                 $query->where('user_id', Auth::id());
             })->get();
+
+        
 
         return Inertia::render('TravelCostCalculator', [
             'costs'         => $costs,
@@ -35,7 +38,7 @@ class TravelCostCalculatorController extends Controller
 
     public function storeTravelData (Request $request) {
         $validated = $request->validate([
-            'car_id'    => 'required|numeric',
+            'car_id'    => 'required',
             'date'      => 'required|date',
             'direction' => 'required|string',
             'distance'  => 'required|numeric',
@@ -43,11 +46,29 @@ class TravelCostCalculatorController extends Controller
 
         try {
             DB::transaction(function() use($validated, $request) {
-                $fuelCost = CostRate::find(1);
-                dd($fuelCost);
+                $car = Car::findOrFail($request->car_id);
+                if ($car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                    abort(403, 'Nem vagy jogosult ehhez a művelethet!');
+                }
+
+                $fuelCost = CostRate::where('id', '1')
+                    ->value('fuel_price');
+                $carConsumption = Car::where('id', $validated['car_id'])
+                    ->value('average_fuel_consumption');
+
+                $travelExpenses = round((($validated['distance'] * $carConsumption) / 100) * $fuelCost);
+                TravelCost::create([
+                    'car_id'            => $validated['car_id'],
+                    'date'              => $validated['date'],
+                    'direction'         => $validated['direction'],
+                    'distance'          => $validated['distance'],
+                    'travel_expenses'   => $travelExpenses,
+                    'fuel_costs'        => $fuelCost,
+                ]);
+                return back()->with('message', 'Sikeres adatfeltöltés!');
             });
         } catch (\Exception $e) {
-            return redirect()->with('message', 'Hiba történt az adatok feltöltése közben: ' . $e->getMessage());
+            return back()->with('message', 'Hiba történt az adatok feltöltése közben: ' . $e->getMessage());
         }
     }
 
@@ -81,5 +102,58 @@ class TravelCostCalculatorController extends Controller
         } catch (\Exception $e) {
             return back()->with('message', 'Hiba az adatok frissítése közben: ' . $e->getMessage());
         }
+    }
+
+    public function destroyTravelData ($id) {
+        DB::transaction(function () use($id) {
+            $selectedToDelete = TravelCost::findOrFail($id);
+
+            if ($selectedToDelete->car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                abort(403, 'Nem vagy jogosult ehhez a művelethez!');
+            }
+
+            $selectedToDelete->delete();
+
+            return back()->with('message', 'Sikere adattörlés!');
+        });
+    }
+
+    public function updateTravelData (Request $request, $id) {
+        $validated = $request->validate([
+            'car_id'    => 'required',
+            'date'      => 'required|date',
+            'direction' => 'required|string',
+            'distance'  => 'required|numeric',
+        ]);
+
+        try {
+            DB::transaction(function() use($validated, $request, $id) {
+                $travelData = TravelCost::findOrFail($id);
+
+                $car = Car::findOrFail($request->car_id);
+                if ($car->user_id !== Auth::id() && !Auth::user()->is_admin) {
+                    abort(403, 'Nem vagy jogosult ehhez a művelethet!');
+                }
+
+                $fuelCost = CostRate::where('id', '1')
+                    ->value('fuel_price');
+                $carConsumption = Car::where('id', $validated['car_id'])
+                    ->value('average_fuel_consumption');
+
+                $travelExpenses = round((($validated['distance'] * $carConsumption) / 100) * $fuelCost);
+                $travelData->update([
+                    'car_id'            => $validated['car_id'],
+                    'date'              => $validated['date'],
+                    'direction'         => $validated['direction'],
+                    'distance'          => $validated['distance'],
+                    'travel_expenses'   => $travelExpenses,
+                    'fuel_costs'        => $fuelCost,
+                ]);
+                return back()->with('message', 'Sikeres adatfeltöltés!');
+            });
+        } catch (\Exception $e) {
+            return back()->with('message', 'Hiba az adatok frissítése közben: ' . $e->getMessage());
+        }
+        
     }
 }

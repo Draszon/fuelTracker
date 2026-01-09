@@ -89,4 +89,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::put('/update-fuel-price', [TravelCostCalculatorController::class, 'updateFuelPrice'])->name('update.fuelPrice');
     Route::put('/update-amortization', [TravelCostCalculatorController::class, 'updateAmortizationPrice'])->name('update.amortizationPrice');
     Route::post('/store-travel-data', [TravelCostCalculatorController::class, 'storeTravelData'])->name('store.travelData');
+    Route::delete('/delete-travel-data/{id}', [TravelCostCalculatorController::class, 'destroyTravelData'])->name('destroy.travelData');
+    Route::put('/update-travel-data/{id}', [TravelCostCalculatorController::class, 'updateTravelData'])->name('update.travelData');
 });
