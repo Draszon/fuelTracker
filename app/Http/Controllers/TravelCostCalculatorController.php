@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use App\Models\CostRate;
 use App\Models\TravelCost;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -14,11 +15,19 @@ class TravelCostCalculatorController extends Controller
 {
     public function index () {
         $costs = CostRate::all();
+        $user = Auth::user();
+        $isAdmin = (bool)($user->is_admin ?? false);
+        $now = Carbon::now();
 
         $baseQuery = TravelCost::with(['car', 'car.user'])
-            ->when(!Auth::user()->is_admin, function ($query) {
+            ->when(!$isAdmin, function ($query) {
                 $query->whereHas('car', fn($car) => $car->where('user_id', Auth::id()));
             });
+
+        $monthlyKm = (clone $baseQuery)
+            ->whereMonth('date', $now->month)
+            ->pluck('distance')
+            ->sum();
         
         $travelDatas = (clone $baseQuery)->orderBy('date', 'desc')->get();
 
@@ -27,12 +36,67 @@ class TravelCostCalculatorController extends Controller
                 $query->where('user_id', Auth::id());
             })->get();
 
-        
+        $amortizationCost = $monthlyKm * $costs[0]->amortization_price;
+
+        $monthlyCost = (clone $baseQuery)
+            ->whereMonth('date', $now->month)
+            ->pluck('travel_expenses')
+            ->sum();
+        $monthlyCostSum = $monthlyCost + $amortizationCost;
 
         return Inertia::render('TravelCostCalculator', [
-            'costs'         => $costs,
-            'travelDatas'   => $travelDatas,
-            'carDatas'      => $carDatas,
+            'costs'             => $costs,
+            'travelDatas'       => $travelDatas,
+            'carDatas'          => $carDatas,
+            'monthlyKm'         => $monthlyKm,
+            'amortizationCost'  => $amortizationCost,
+            'monthlyCostSum'    => $monthlyCostSum,
+        ]);
+    }
+
+    public function filteredDatas(Request $request) {
+        $params = $request->input('params');
+        $costs = CostRate::all();
+        $user = Auth::user();
+        $is_admin = (bool)($user->is_admin ?? false);
+        $now = Carbon::now();
+
+        $baseQuery = TravelCost::with('car', 'car.user')
+            ->when(!$is_admin, function($query) {
+                $query->whereHas('car', fn($car) => $car->where('user_id', Auth::id()));
+            });
+
+        $travelDatas = (clone $baseQuery)->orderBy('date', 'desc')->get();
+
+        $carDatas = Car::with('user')
+            ->when(!Auth::user()->is_admin, function ($query) {
+                $query->where('user_id', Auth::id());
+            })->get();
+
+        if ($params['month'] && $params['car']) {
+            $selectedMonthKm = (clone $baseQuery)
+                ->whereMonth('date', $params['month'])
+                ->where('car_id', $params['car'])
+                ->pluck('distance')
+                ->sum();
+            
+            $amortizationCost = $selectedMonthKm * $costs[0]->amortization_price;
+            
+            $monthlyCost = (clone $baseQuery)
+                ->whereMonth('date', $params['month'])
+                ->where('car_id', $params['car'])
+                ->pluck('travel_expenses')
+                ->sum();
+            $selectedMonthCostSum = $monthlyCost + $amortizationCost;
+        }
+
+        return Inertia::render('TravelCostCalculator', [
+            'costs' => $costs,
+            'travelDatas' => $travelDatas,
+            'carDatas' => $carDatas,
+            'monthlyKm' => $selectedMonthKm,
+            'amortizationCost'  => $amortizationCost,
+            'monthlyCostSum'    => $selectedMonthCostSum,
         ]);
     }
 

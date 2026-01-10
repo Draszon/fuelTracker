@@ -91,4 +91,5 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::post('/store-travel-data', [TravelCostCalculatorController::class, 'storeTravelData'])->name('store.travelData');
     Route::delete('/delete-travel-data/{id}', [TravelCostCalculatorController::class, 'destroyTravelData'])->name('destroy.travelData');
     Route::put('/update-travel-data/{id}', [TravelCostCalculatorController::class, 'updateTravelData'])->name('update.travelData');
+    Route::get('/filtered-data', [TravelCostCalculatorController::class, 'filteredDatas'])->name('filtered.datas');
 });

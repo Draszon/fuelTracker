@@ -7,6 +7,9 @@ const props = defineProps({
   costs: Object,
   travelDatas: Object,
   carDatas: Object,
+  monthlyKm: Number,
+  amortizationCost: Number,
+  monthlyCostSum: Number
 });
 
 const page = usePage();
@@ -14,6 +17,50 @@ const flashMessage = computed(() => page.props.flash?.message);
 const message = ref(flashMessage.value);
 const selectedCarId = ref(null);
 let editActive = ref(false);
+let selectedMonth = ref(null);
+let selectedCar = ref(null);
+const months = ref({
+  'Január': '01',
+  'Február': '02',
+  'Március': '03',
+  'Április': '04',
+  'Május': '05',
+  'Június': '06',
+  'Július': '07',
+  'Augusztus': '08',
+  'Szeptember': '09',
+  'Október': '10',
+  'November': '11',
+  'December': '12'
+});
+
+const filterCostData = () => {
+  const params = {};
+  if (selectedMonth.value) params.month = selectedMonth.value;
+  if (selectedCar.value) params.car = selectedCar.value;
+
+  router.visit('/filtered-data', {
+    data: {
+      params
+    },
+    preserveScroll: true
+  });
+}
+
+watch(selectedCarId, (id, oldId) => {
+  if(!id) {
+    router.get('/', {}, {
+      preserveScroll: true,
+      preserveState: true
+    });
+    return;
+  }
+
+  router.get('/filtered-statistics', { car_id: id }, {
+    preserveScroll: true,
+    preserveState: true
+  });
+});
 
 const dailyTravelForm = useForm({
   id: null,
@@ -112,8 +159,8 @@ const filteredDatas = computed(() => {
       <h2 class="font-bold text-2xl mb-2">Havi üzemanyagköltség kiszámítása</h2>
       <h2 class="text-red-500" v-if="message">{{ message }}</h2>
       <form @submit.prevent="updateFuelPrice" class="my-5">
-        <h3 class="text-red-500 font-bold mb-2">Nav szerinti üzemanyagár jelenleg: {{ costs[0].fuel_price }} Ft</h3>
-        <h3 class="text-red-500 font-bold mb-2">Amortizációs költség jelenleg: {{ costs[0].amortization_price }} Ft/km</h3>
+        <h3 class="text-red-500 font-bold mb-2">Nav szerinti üzemanyagár jelenleg: {{ costs[0]?.fuel_price ?? 0 }} Ft</h3>
+        <h3 class="text-red-500 font-bold mb-2">Amortizációs költség jelenleg: {{ costs[0]?.amortization_price ?? 0 }} Ft/km</h3>
 
         <div class="flex flex-col mb-5">
           <label for="monthly-fuel-cost">Havi üzemanyagár:</label>
@@ -197,30 +244,27 @@ const filteredDatas = computed(() => {
 
         <div class="basis-1/2 flex flex-col gap-2">
           <div class="flex gap-2 min-w-80 mb-5">
-            <form>
+            <form @submit.prevent="filterCostData">
               <div class="flex flex-col sm:flex-row sm:gap-5">
                 <div>
                   <p>Hónap kiválasztása</p>
-                  <select required id="car"
+                  <select required id="car" v-model="selectedMonth"
                     class="rounded-lg border-gray-200 shadow-none max-w-52
                     focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
                     focus:shadow-lg transition ease-in-out mb-5"
                   >
-                    <option>Január</option>
-                    <option>Február</option>
-                    <option>Március</option>
+                    <option v-for="(value, month) in months" :key="value" :value="value">{{ month }}</option>
                   </select>
                 </div>  
               
                 <div>
                   <p>Kocsi kiválasztása</p>
-                  <select required id="car"
+                  <select required id="car" v-model="selectedCar"
                     class="rounded-lg border-gray-200 shadow-none max-w-52
                     focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
                     focus:shadow-lg transition ease-in-out mb-5"
                   >
-                    <option>Suzu</option>
-                    <option>Adi</option>
+                    <option v-for="carData in carDatas" :key="carData.id" :value="carData.id">{{ carData.name ?? "Nincs még kocsi" }}</option>
                   </select>
                 </div>
                 </div>
@@ -233,17 +277,17 @@ const filteredDatas = computed(() => {
             <h2 class="font-semibold text-xl mb-5">Aktuális hónap adatai</h2>
             <div class="flex gap-2 min-w-80">
               <p>Havi össz. km =</p>
-              <p class="font-bold">435 km</p>
+              <p class="font-bold">{{ monthlyKm ?? 0 }} km</p>
             </div>
 
             <div class="flex gap-2 min-w-52">
               <p>x 15 Ft =</p>
-              <p class="font-bold">12650 Ft</p>
+              <p class="font-bold">{{ amortizationCost ?? 0 }} Ft</p>
             </div>
 
             <div class="flex gap-2 min-w-52">
               <p>Havi teljes költség =</p>
-              <p class="font-bold">13783 Ft</p>
+              <p class="font-bold">{{ monthlyCostSum ?? 0 }} Ft</p>
             </div>
           </div>
         </div>
