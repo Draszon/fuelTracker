@@ -27,7 +27,6 @@ watch(selectedCarId, (id, oldId) => {
     preserveScroll: true,
     preserveState: true
   });
-  
 });
 
 </script>

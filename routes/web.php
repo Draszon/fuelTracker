@@ -7,6 +7,7 @@ use App\Http\Controllers\FuelController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\TravelCostCalculatorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -84,5 +85,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::delete('/insurance-delete/{id}', [InsuranceController::class, 'destroy'])->name('destroy.insuranceData');
 
     // Útiköltség kalkulátor - még nincs implementálva
-    
+    Route::get('/travel-cost-calculator', [TravelCostCalculatorController::class, 'index']);
+    Route::put('/update-fuel-price', [TravelCostCalculatorController::class, 'updateFuelPrice'])->name('update.fuelPrice');
+    Route::put('/update-amortization', [TravelCostCalculatorController::class, 'updateAmortizationPrice'])->name('update.amortizationPrice');
+    Route::post('/store-travel-data', [TravelCostCalculatorController::class, 'storeTravelData'])->name('store.travelData');
+    Route::delete('/delete-travel-data/{id}', [TravelCostCalculatorController::class, 'destroyTravelData'])->name('destroy.travelData');
+    Route::put('/update-travel-data/{id}', [TravelCostCalculatorController::class, 'updateTravelData'])->name('update.travelData');
+    Route::get('/filtered-data', [TravelCostCalculatorController::class, 'filteredDatas'])->name('filtered.datas');
 });

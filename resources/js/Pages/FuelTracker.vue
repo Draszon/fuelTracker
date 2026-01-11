@@ -113,7 +113,7 @@ const filteredFuelData = computed(() => {
       <h2 class="font-bold text-2xl mb-2">Üzemanyag adatok feltöltése / módosítása:</h2>
 
       <div class="my-5">
-        <Link href="#" class="transition ease-in-out delay-150 text-white
+        <Link href="/travel-cost-calculator" class="transition ease-in-out delay-150 text-white
           rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Útiköltség kalkulátor</Link>
       </div>
       

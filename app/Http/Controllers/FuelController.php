@@ -60,7 +60,7 @@ class FuelController extends Controller
                 $car = Car::findOrFail($request->car_id);
 
                 if ($car->user_id !== Auth::id() && !Auth::user()->is_admin) {
-                    abort(403, 'Nem vagy jogosult erre a műveletre!');
+                    abort(403, 'Nem vagy jogosult ehhez a műveletre!');
                 }
 
                 // A tankolás növeli az autó aktuális km óra állását.
