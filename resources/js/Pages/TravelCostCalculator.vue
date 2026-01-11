@@ -19,6 +19,7 @@ const selectedCarId = ref(null);
 let editActive = ref(false);
 let selectedMonth = ref(null);
 let selectedCar = ref(null);
+const selectedMonthText = ref(null);
 const months = ref({
   'Január': '01',
   'Február': '02',
@@ -39,6 +40,7 @@ const filterCostData = () => {
   if (selectedMonth.value) params.month = selectedMonth.value;
   if (selectedCar.value) params.car = selectedCar.value;
 
+
   router.visit('/filtered-data', {
     data: {
       params
@@ -46,21 +48,6 @@ const filterCostData = () => {
     preserveScroll: true
   });
 }
-
-watch(selectedCarId, (id, oldId) => {
-  if(!id) {
-    router.get('/', {}, {
-      preserveScroll: true,
-      preserveState: true
-    });
-    return;
-  }
-
-  router.get('/filtered-statistics', { car_id: id }, {
-    preserveScroll: true,
-    preserveState: true
-  });
-});
 
 const dailyTravelForm = useForm({
   id: null,
@@ -272,9 +259,13 @@ const filteredDatas = computed(() => {
               rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">Szűrés</button>
             </form>
           </div>
+          <button @click="router.visit('/travel-cost-calculator', {preserveScroll: true});"
+            class="transition ease-in-out delay-150 text-white max-w-48
+            rounded py-2 px-10 bg-gray-500 hover:bg-gray-700"
+            >Szűrő törlése</button>
 
           <div class="bg-gray-100 max-w-72 p-7 rounded-md">
-            <h2 class="font-semibold text-xl mb-5">Aktuális hónap adatai</h2>
+            <h2 class="font-semibold text-xl mb-5">Hónap adatai</h2>
             <div class="flex gap-2 min-w-80">
               <p>Havi össz. km =</p>
               <p class="font-bold">{{ monthlyKm ?? 0 }} km</p>
@@ -321,8 +312,8 @@ const filteredDatas = computed(() => {
               <li class="flex-none w-32">Kocsi</li>
               <li class="flex-none w-64">Honnan - Hova</li>
               <li class="flex-none w-32">Megtett táv (km)</li>
-              <li class="flex-none w-32">Útiköltség</li>
               <li class="flex-none w-32">Üzemanyagár</li>
+              <li class="flex-none w-32">Útiköltség</li>
               <li class="flex-none w-32">Műveletek</li>
             </ul>
           </div>
@@ -336,8 +327,8 @@ const filteredDatas = computed(() => {
               <li class="flex justify-center items-center w-32">{{ filteredData.car.name }}</li>
               <li class="flex justify-center items-center w-64">{{ filteredData.direction }}</li>
               <li class="flex justify-center items-center w-32">{{ filteredData.distance }} km</li>
-              <li class="flex justify-center items-center w-32">{{ filteredData.travel_expenses }} Ft</li>
               <li class="flex justify-center items-center w-32">{{ filteredData.fuel_costs }} Ft/l</li>
+              <li class="flex justify-center items-center w-32">{{ filteredData.travel_expenses }} Ft</li>
               <li class="w-32 flex justify-center items-center gap-5">
                 <button @click="deleteData(filteredData.id)"
                   class="px-2 h-8 rounded bg-red-500 text-white">Törlés</button>
