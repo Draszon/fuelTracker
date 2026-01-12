@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('cost_rates', function (Blueprint $table) {
             $table->id();
-            $table->integer('fuel_price')->default(0)->change();
-            $table->integer('amortization_price')->default(0)->change();
+            $table->integer('fuel_price')->default(0);
+            $table->integer('amortization_price')->default(0);
             $table->timestamps();
         });
     }

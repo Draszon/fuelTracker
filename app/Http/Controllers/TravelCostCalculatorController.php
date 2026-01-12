@@ -51,7 +51,12 @@ class TravelCostCalculatorController extends Controller
             })->get();
 
 		// amortizáció számítása: havi km * egységár
-        $amortizationCost = $monthlyKm * $costs[0]->amortization_price;
+        if (!$costs->isEmpty()) {
+            $amortizationCost = $monthlyKm * $costs[0]->amortization_price;
+        } else {
+            $amortizationCost = 0;
+        }
+        
 
 		// havi egyéb utazási költségek és összegzés
         $monthlyCost = (clone $baseQuery)

@@ -19,7 +19,6 @@ const selectedCarId = ref(null);
 let editActive = ref(false);
 let selectedMonth = ref(null);
 let selectedCar = ref(null);
-const selectedMonthText = ref(null);
 const months = ref({
   'Január': '01',
   'Február': '02',
@@ -39,7 +38,6 @@ const filterCostData = () => {
   const params = {};
   if (selectedMonth.value) params.month = selectedMonth.value;
   if (selectedCar.value) params.car = selectedCar.value;
-
 
   router.visit('/filtered-data', {
     data: {

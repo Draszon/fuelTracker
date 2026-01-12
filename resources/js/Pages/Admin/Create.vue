@@ -21,7 +21,7 @@ const page = usePage();
 
 const submit = () => {
     if (form.isAdmin === '') form.isAdmin = false;
-    form.post(route('register'), {
+    form.post(route('admin.register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };

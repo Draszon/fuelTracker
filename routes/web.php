@@ -40,7 +40,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     });
 
     // Új felhasználó regisztrálása (admin által)
-    Route::post('/register', [AdminUserController::class, 'create'])->name('register');
+    Route::post('/admin/register', [AdminUserController::class, 'create'])->name('admin.register');
 
     /**
      * Főoldal - Statisztikai adatok megjelenítése és szűrése
