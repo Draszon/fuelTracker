@@ -11,8 +11,6 @@ const props = defineProps({
 
 // Flash üzenetek kezelése
 const page = usePage();
-const flashMessage = computed(() => page.props.flash?.message);
-const message = ref(flashMessage.value);
 
 // UI állapotok (szerkesztés / új autó hozzáadása)
 let editActive = ref(false);
@@ -106,10 +104,6 @@ const updateCar = (id) => {
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
       <h2 class="font-bold text-2xl mb-5">Új gépjármű feltöltése</h2>
-      
-      <p v-if="message" class="font-medium text-red-500">
-        {{ message }}
-      </p>
 
       <!-- Form: új mentés vagy meglévő frissítése -->
       <form @submit.prevent="editActive ? updateCar(form.id) : store()">
@@ -252,6 +246,10 @@ const updateCar = (id) => {
   <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
     <div class="px-2 xl:px-10">
       <h2 class="font-bold text-2xl mb-5">Gépjárművek</h2>
+
+      <p v-if="page.props.flash?.message" class="font-medium text-red-500">
+        {{ page.props.flash.message }}
+      </p>
 
       <div class="mb-5">
         <button @click="addNewCar = true" class="transition ease-in-out delay-150 text-white
