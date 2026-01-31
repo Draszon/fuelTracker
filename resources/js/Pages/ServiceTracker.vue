@@ -1,14 +1,27 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { Head, useForm, router, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
   serviceDatas: Array,
   carDatas: Array
 });
 
-let editActive = false;
+const page = usePage();
+const flashMessage = computed(() => page.props.flash?.message);
+const message = ref(flashMessage.value);
+
+watch(flashMessage, (val) => {
+  if (val) {
+    message.value = val;
+    setTimeout(() => {
+      message.value = null;
+    }, 3000);
+  }
+});
+
+let editActive = ref(false);
 const selectedCarId = ref(null);
 
 let form = useForm({
@@ -36,7 +49,7 @@ const destroy = (id) => {
 }
 
 const loadSelectedService = (selected) => {
-  editActive = true;
+  editActive.value = true;
   form.reset();
   form.id = selected.id;
   form.car_id = selected.car_id;
@@ -51,9 +64,14 @@ const updateSelectedService = (id) => {
     preserveScroll: true,
     onSuccess: () => {
       form.reset();
-      editActive = false;
+      editActive.value = false;
     }
   });
+}
+
+const cancelEdit = () => {
+  form.reset();
+  editActive.value = false;
 }
 
 const filteredServiceData = computed(() => {
@@ -61,128 +79,322 @@ const filteredServiceData = computed(() => {
   return props.serviceDatas.filter(f => f.car_id === selectedCarId.value);
 });
 
+// Pagination
+const currentPage = ref(1);
+const itemsPerPage = 30;
+
+const totalPages = computed(() => Math.ceil(filteredServiceData.value.length / itemsPerPage));
+
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredServiceData.value.slice(start, end);
+});
+
+// Reset page when filter changes
+watch(selectedCarId, () => {
+  currentPage.value = 1;
+});
+
+function goToPage(pageNum) {
+  if (pageNum >= 1 && pageNum <= totalPages.value) {
+    currentPage.value = pageNum;
+  }
+}
+
+// Generate page numbers to display
+const visiblePages = computed(() => {
+  const pages = [];
+  const total = totalPages.value;
+  const current = currentPage.value;
+  
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+  } else {
+    if (current <= 3) {
+      pages.push(1, 2, 3, 4, '...', total);
+    } else if (current >= total - 2) {
+      pages.push(1, '...', total - 3, total - 2, total - 1, total);
+    } else {
+      pages.push(1, '...', current - 1, current, current + 1, '...', total);
+    }
+  }
+  return pages;
+});
+
+// Summary stats
+const serviceCount = computed(() => filteredServiceData.value.length);
+const totalCost = computed(() => filteredServiceData.value.reduce((sum, s) => sum + Number(s.cost), 0));
+
 </script>
 
 <template>
 <Head>
   <title>Szerviz</title>
 </Head>
+
 <PublicLayout>
 
-<section class="my-10">
-  <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
-    <div class="px-2 xl:px-10">
-      <h2 class="font-bold text-2xl mb-5">Szerviztevékenség feltöltése</h2>
-      
-      <form @submit.prevent="editActive ? updateSelectedService(form.id) : store()">
-        <div class="flex flex-col mb-5">
-          <label for="car">Válaszd ki a kocsit</label>
-          <select required v-model="form.car_id" id="car"
-            class="rounded-lg border-gray-200 shadow-none max-w-80
-            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
-            focus:shadow-lg transition ease-in-out"
-          >
-          <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
-        </select>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+  <!-- Szerviz feltöltés form -->
+  <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-gradient-to-r from-violet-500 to-purple-500 px-6 py-4">
+      <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        {{ editActive ? 'Szerviz szerkesztése' : 'Új szerviz felvétele' }}
+      </h2>
+    </div>
+    <div class="p-6">
+      <!-- Flash üzenet -->
+      <div v-if="message" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+        <p class="font-medium text-red-600 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {{ message }}
+        </p>
+      </div>
+
+      <form @submit.prevent="editActive ? updateSelectedService(form.id) : store()" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="space-y-2">
+            <label for="car" class="block text-sm font-medium text-gray-700">Jármű</label>
+            <select required v-model="form.car_id" id="car"
+              class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4
+              focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20
+              focus:bg-white transition-all duration-200">
+              <option value="" disabled>Válassz járművet...</option>
+              <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label for="date" class="block text-sm font-medium text-gray-700">Dátum</label>
+            <input type="date" required id="date" v-model="form.date"
+              class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4
+              focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20
+              focus:bg-white transition-all duration-200">
+          </div>
+
+          <div class="space-y-2">
+            <label for="km" class="block text-sm font-medium text-gray-700">KM óra állása</label>
+            <input type="number" placeholder="230000" required id="km" v-model="form.current_km"
+              class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4
+              focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20
+              focus:bg-white transition-all duration-200">
+          </div>
+
+          <div class="space-y-2 md:col-span-2">
+            <label for="description" class="block text-sm font-medium text-gray-700">Javítás leírása</label>
+            <input type="text" placeholder="Pl.: Olajcsere, Fékbetét csere..." required id="description" v-model="form.description"
+              class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4
+              focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20
+              focus:bg-white transition-all duration-200">
+          </div>
+
+          <div class="space-y-2">
+            <label for="cost" class="block text-sm font-medium text-gray-700">Összeg (Ft)</label>
+            <input type="number" placeholder="13500" required id="cost" v-model="form.cost"
+              class="w-full rounded-xl border-gray-200 bg-gray-50 py-3 px-4
+              focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20
+              focus:bg-white transition-all duration-200">
+          </div>
         </div>
 
-        <div class="flex flex-col mb-5">
-          <label for="date">Dátum</label>
-          <input type="date" placeholder="2" required id="date" v-model="form.date"
-            class="rounded-lg border-gray-200 shadow-none max-w-80
-            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
-            focus:shadow-lg transition ease-in-out"
-          >
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button type="submit" 
+            class="px-8 py-3 bg-violet-500 hover:bg-violet-600 text-white font-medium
+            rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            {{ editActive ? 'Frissítés' : 'Feltöltés' }}
+          </button>
+          <button v-if="editActive" type="button" @click="cancelEdit"
+            class="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium
+            rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Mégse
+          </button>
         </div>
-
-        <div class="flex flex-col mb-5">
-          <label for="km">KM óra állása</label>
-          <input type="number" placeholder="230000" required id="km" v-model="form.current_km"
-            class="rounded-lg border-gray-200 shadow-none max-w-80
-            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
-            focus:shadow-lg transition ease-in-out"
-          >
-        </div>
-
-        <div class="flex flex-col mb-5">
-          <label for="description">Javítás leírása</label>
-          <input type="text" placeholder="Olajcsere" required id="description" v-model="form.description"
-            class="rounded-lg border-gray-200 shadow-none max-w-80
-            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
-            focus:shadow-lg transition ease-in-out"
-          >
-        </div>
-
-        <div class="flex flex-col mb-5">
-          <label for="cost">Összeg</label>
-          <input type="number" placeholder="13500" required id="cost" v-model="form.cost"
-            class="rounded-lg border-gray-200 shadow-none max-w-80
-            focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
-            focus:shadow-lg transition ease-in-out"
-          >
-        </div>
-
-        <button type="submit" class="transition ease-in-out delay-150 text-white
-            rounded py-2 px-10 bg-gray-500 hover:bg-gray-700">{{ editActive ? 'Frissítés' : 'Feltöltés' }}</button>
       </form>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="my-10">
-  <div class="bg-white py-10 rounded-md shadow-sm w-full max-w-[1280px] xl:mx-auto">
-    <div class="px-2 xl:px-10">
-      <div class="overflow-x-auto">
-        <div class="mb-5">
-          <h2 class="font-semibold mb-2">Szűrés kocsira</h2>
-          <select required v-model="selectedCarId" id="car"
-          class="rounded-lg border-gray-200 shadow-none max-w-80
-          focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500
-          focus:shadow-lg transition ease-in-out w-56">
+  <!-- Szerviznapló lista -->
+  <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
+      <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        Szerviznapló
+      </h2>
+    </div>
+    <div class="p-6">
+      <!-- Szűrő -->
+      <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div class="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Szűrés:
+          </div>
+          <select v-model="selectedCarId"
+            class="w-full sm:w-56 rounded-xl border-gray-200 bg-white py-2.5 px-4 text-sm
+            focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20
+            transition-all duration-200">
+            <option :value="null">Összes jármű</option>
             <option v-for="car in carDatas" :key="car.id" :value="car.id">{{ car.name }}</option>
           </select>
-          <button @click="selectedCarId = null"
-          class="transition ease-in-out delay-150 text-white
-          rounded py-2 px-10 bg-gray-500 hover:bg-gray-700 my-5 sm:ml-5"
-          >Szűrő törlése</button>
+          <button v-if="selectedCarId" @click="selectedCarId = null"
+            class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium text-sm
+            rounded-xl transition-all duration-200 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Szűrő törlése
+          </button>
         </div>
+      </div>
 
-        <div class="min-w-max bg-gray-200 rounded border-b-2 border-gray-300 shadow-md">
-          <div class="h-10 flex justify-center items-center">
-            <ul class="flex flex-row gap-5 text-center font-medium">
-              <li class="flex-none w-32">Dátum</li>
-              <li class="flex-none w-32">Kocsi</li>
-              <li class="flex-none w-32">km óra állása</li>
-              <li class="flex-none w-64">Javítás leírása</li>
-              <li class="flex-none w-32">Összeg</li>
-              <li class="flex-none w-32">Műveletek</li>
-            </ul>
-          </div>
+      <!-- Táblázat -->
+      <div class="overflow-x-auto rounded-xl border border-gray-200">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gradient-to-r from-gray-100 to-gray-50">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Dátum</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jármű</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">KM állás</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Leírás</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Összeg</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Műveletek</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr v-for="serviceData in paginatedData" :key="serviceData.id"
+              class="hover:bg-gray-50 transition-colors duration-150">
+              <td class="px-4 py-3 text-sm text-gray-800 whitespace-nowrap">{{ serviceData.date }}</td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg">
+                  {{ serviceData.car.name }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-800 text-right whitespace-nowrap">
+                <span class="font-medium">{{ serviceData.current_km.toLocaleString('hu-HU') }}</span> <span class="text-gray-500">km</span>
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-800">{{ serviceData.description }}</td>
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="px-2.5 py-1 bg-violet-100 text-violet-700 text-xs font-bold rounded-lg">
+                  {{ Number(serviceData.cost).toLocaleString('hu-HU') }} Ft
+                </span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <div class="flex justify-center gap-2">
+                  <button @click="loadSelectedService(serviceData)"
+                    class="p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all duration-200"
+                    title="Szerkesztés">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button @click="destroy(serviceData.id)"
+                    class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                    title="Törlés">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Üres állapot -->
+        <div v-if="filteredServiceData.length === 0" class="text-center py-12">
+          <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          </svg>
+          <p class="text-gray-500">Nincs szervizadat</p>
         </div>
+      </div>
 
-        <div class="min-w-max border-b border-gray-300">
-          <div v-for="serviceData in filteredServiceData" :key="serviceData.id"
-            class="flex justify-center items-center border-b py-2">
-            <ul class="flex flex-row gap-5 text-center font-medium">
-              <li class="flex justify-center items-center w-32">{{ serviceData.date }}</li>
-              <li class="flex justify-center items-center w-32">{{ serviceData.car.name }}</li>
-              <li class="flex justify-center items-center w-32">{{ serviceData.current_km }} km</li>
-              <li class="flex justify-center items-center w-64">{{ serviceData.description }}</li>
-              <li class="flex justify-center items-center w-32">{{ serviceData.cost }} Ft</li>
-              <li class="w-32 flex justify-center items-center gap-5">
-                <button @click="destroy(serviceData.id)"
-                  class="px-2 h-8 rounded bg-red-500 text-white">Törlés</button>
-                
-                <button @click="loadSelectedService(serviceData)"
-                  class="py-1 h-8 px-2 rounded bg-gray-500 text-white">Szerk.</button>
-              </li>
-            </ul>
-          </div>
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="text-sm text-gray-500">
+          Összesen <span class="font-semibold text-gray-700">{{ filteredServiceData.length }}</span> rekord, 
+          <span class="font-semibold text-gray-700">{{ totalPages }}</span> oldal
+        </div>
+        <nav class="flex items-center gap-1">
+          <!-- Első oldal -->
+          <button @click="goToPage(1)" :disabled="currentPage === 1"
+            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+          <!-- Előző oldal -->
+          <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <!-- Oldalszámok -->
+          <template v-for="pageNum in visiblePages" :key="pageNum">
+            <span v-if="pageNum === '...'" class="px-2 text-gray-400">...</span>
+            <button v-else @click="goToPage(pageNum)"
+              :class="[
+                'min-w-[40px] h-10 rounded-lg font-medium transition-all duration-200',
+                currentPage === pageNum 
+                  ? 'bg-violet-500 text-white shadow-sm' 
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+              ]">
+              {{ pageNum }}
+            </button>
+          </template>
+
+          <!-- Következő oldal -->
+          <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <!-- Utolsó oldal -->
+          <button @click="goToPage(totalPages)" :disabled="currentPage === totalPages"
+            class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Összesítés -->
+      <div v-if="filteredServiceData.length > 0" class="mt-6 grid grid-cols-2 gap-2 sm:gap-4">
+        <div class="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-3 sm:p-4 border border-violet-100">
+          <p class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Szervizek</p>
+          <p class="text-lg sm:text-2xl font-bold text-gray-800 mt-1">{{ serviceCount }} <span class="text-sm sm:text-base font-normal text-gray-500">db</span></p>
+        </div>
+        <div class="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-3 sm:p-4 border border-violet-100">
+          <p class="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Összköltség</p>
+          <p class="text-lg sm:text-2xl font-bold text-gray-800 mt-1 truncate">{{ totalCost.toLocaleString('hu-HU') }} <span class="text-sm sm:text-base font-normal text-gray-500">Ft</span></p>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+
+</div>
 
 </PublicLayout>
 </template>
